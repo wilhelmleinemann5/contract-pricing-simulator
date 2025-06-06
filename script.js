@@ -64,9 +64,10 @@ class MarketSimulator {
         const volatilityEl = document.getElementById('volatility');
         const weeksEl = document.getElementById('weeks');
         const nSimulationsEl = document.getElementById('simulations');
+        const volumeDiscountEl = document.getElementById('volumeDiscount');
 
         // Check if elements exist
-        if (!initialSpotEl || !forecastedRateEl || !volatilityEl || !weeksEl || !nSimulationsEl) {
+        if (!initialSpotEl || !forecastedRateEl || !volatilityEl || !weeksEl || !nSimulationsEl || !volumeDiscountEl) {
             throw new Error('Required input elements not found in DOM');
         }
 
@@ -75,16 +76,21 @@ class MarketSimulator {
         const volatility = parseFloat(volatilityEl.value) / 100; // Convert percentage to decimal
         const weeks = parseInt(weeksEl.value);
         const nSimulations = parseInt(nSimulationsEl.value);
+        const volumeDiscount = parseFloat(volumeDiscountEl.value) / 100; // Convert percentage to decimal
 
-        console.log('Input values:', { initialSpot, forecastedRate, volatility, weeks, nSimulations });
+        console.log('Input values:', { initialSpot, forecastedRate, volatility, weeks, nSimulations, volumeDiscount });
 
         // Validate inputs
-        if (isNaN(initialSpot) || isNaN(forecastedRate) || isNaN(volatility) || isNaN(weeks) || isNaN(nSimulations)) {
+        if (isNaN(initialSpot) || isNaN(forecastedRate) || isNaN(volatility) || isNaN(weeks) || isNaN(nSimulations) || isNaN(volumeDiscount)) {
             throw new Error('Please ensure all fields contain valid numbers.');
         }
 
-        if (initialSpot <= 0 || forecastedRate <= 0 || volatility < 0 || weeks <= 0 || nSimulations <= 0) {
+        if (initialSpot <= 0 || forecastedRate <= 0 || volatility < 0 || weeks <= 0 || nSimulations <= 0 || volumeDiscount < 0) {
             throw new Error('All values must be positive numbers.');
+        }
+
+        if (volumeDiscount >= 1) {
+            throw new Error('Volume discount must be less than 100%.');
         }
 
         // Calculate drift parameter: ln(forecasted_rate/starting_rate) / weeks
@@ -94,20 +100,22 @@ class MarketSimulator {
         console.log('Drift calculation:', { totalDrift, weeklyDrift });
 
         // Run Monte Carlo simulation
-        const results = this.monteCarloSimulation(initialSpot, forecastedRate, volatility, weeklyDrift, weeks, nSimulations);
+        const results = this.monteCarloSimulation(initialSpot, forecastedRate, volatility, weeklyDrift, weeks, nSimulations, volumeDiscount);
         
         console.log('Simulation results:', results);
 
         // Update chart and statistics
         this.updateChart(results);
         this.updateStatistics(results, initialSpot, forecastedRate);
+        this.updateContractStatistics(results, volumeDiscount);
         
         console.log('Simulation completed successfully');
     }
 
-    monteCarloSimulation(initialSpot, forecastedRate, volatility, weeklyDrift, weeks, nSimulations) {
+    monteCarloSimulation(initialSpot, forecastedRate, volatility, weeklyDrift, weeks, nSimulations, volumeDiscount) {
         const pricePaths = [];
         const finalPrices = [];
+        const syntheticContractPrices = [];
 
         for (let sim = 0; sim < nSimulations; sim++) {
             const path = [initialSpot];
@@ -123,6 +131,12 @@ class MarketSimulator {
             
             pricePaths.push(path);
             finalPrices.push(currentPrice);
+            
+            // Calculate synthetic contract price: average of all weekly prices
+            const averageSpotPrice = path.reduce((sum, price) => sum + price, 0) / path.length;
+            // Apply volume discount to get synthetic contract price
+            const syntheticContractPrice = averageSpotPrice * (1 - volumeDiscount);
+            syntheticContractPrices.push(syntheticContractPrice);
         }
 
         // Calculate percentiles for each week
@@ -149,11 +163,13 @@ class MarketSimulator {
         return {
             pricePaths,
             finalPrices,
+            syntheticContractPrices,
             percentiles,
             weeks,
             forecastedRate,
             initialSpot,
-            weeklyDrift
+            weeklyDrift,
+            volumeDiscount
         };
     }
 
@@ -254,6 +270,20 @@ class MarketSimulator {
                             pointRadius: 0,
                             borderWidth: 3,
                             borderDash: [10, 5]
+                        },
+                        {
+                            label: 'Mean Contract Price',
+                            data: weeks.map(() => {
+                                const contractPrices = results.syntheticContractPrices;
+                                const meanContractPrice = contractPrices.reduce((a, b) => a + b, 0) / contractPrices.length;
+                                return meanContractPrice;
+                            }),
+                            borderColor: '#e74c3c',
+                            backgroundColor: '#e74c3c',
+                            fill: false,
+                            pointRadius: 0,
+                            borderWidth: 3,
+                            borderDash: [15, 5]
                         }
                     ]
                 },
@@ -409,11 +439,71 @@ class MarketSimulator {
         }
     }
 
+    updateContractStatistics(results, volumeDiscount) {
+        try {
+            console.log('Updating contract statistics...');
+            const contractPrices = results.syntheticContractPrices.sort((a, b) => a - b);
+            const contractMean = contractPrices.reduce((a, b) => a + b, 0) / contractPrices.length;
+            const contractMedian = this.percentile(contractPrices, 50);
+            const contractP5 = this.percentile(contractPrices, 5);
+            const contractP95 = this.percentile(contractPrices, 95);
+            
+            // Calculate average spot price without discount for comparison
+            const avgSpotPrices = results.syntheticContractPrices.map(price => price / (1 - volumeDiscount));
+            const avgSpotMean = avgSpotPrices.reduce((a, b) => a + b, 0) / avgSpotPrices.length;
+            
+            // Contract pricing statistics
+            const contractStatsHTML = `
+                <div class="stat-item">
+                    <span class="stat-label">Mean Contract Price</span>
+                    <span class="stat-value">$${contractMean.toFixed(0)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Median Contract Price</span>
+                    <span class="stat-value">$${contractMedian.toFixed(0)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">5th Percentile</span>
+                    <span class="stat-value">$${contractP5.toFixed(0)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">95th Percentile</span>
+                    <span class="stat-value">$${contractP95.toFixed(0)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Avg Spot (No Discount)</span>
+                    <span class="stat-value">$${avgSpotMean.toFixed(0)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Volume Discount Applied</span>
+                    <span class="stat-value">${(volumeDiscount * 100).toFixed(1)}%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Discount Value</span>
+                    <span class="stat-value positive">$${(avgSpotMean - contractMean).toFixed(0)}</span>
+                </div>
+            `;
+
+            const contractStatsEl = document.getElementById('contractStats');
+            
+            if (!contractStatsEl) {
+                throw new Error('Contract statistics container not found in DOM');
+            }
+
+            contractStatsEl.innerHTML = contractStatsHTML;
+            
+            console.log('Contract statistics updated successfully');
+        } catch (error) {
+            console.error('Error updating contract statistics:', error);
+            throw error;
+        }
+    }
+
     runInitialSimulation() {
         try {
             console.log('Running initial simulation...');
             // Check if all required elements exist before running
-            const requiredElements = ['initialSpot', 'forecastedRate', 'volatility', 'weeks', 'simulations'];
+            const requiredElements = ['initialSpot', 'forecastedRate', 'volatility', 'weeks', 'simulations', 'volumeDiscount'];
             const missingElements = requiredElements.filter(id => !document.getElementById(id));
             
             if (missingElements.length > 0) {
