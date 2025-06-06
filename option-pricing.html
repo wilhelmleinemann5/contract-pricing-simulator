@@ -23,6 +23,7 @@
     <main>
       <section class="option-pricing-ui">
         <h2>Option Payoff Calculator <span class="info-icon" tabindex="0" aria-label="About option payoffs" data-tooltip="A call option pays if the simulated rate exceeds the strike; a put pays if it falls below. This tool uses Monte Carlo simulation to estimate the value of such instruments.">ℹ️</span></h2>
+        <button type="button" id="importParams" class="import-btn full-width">Import from Main Simulator</button>
         <div class="option-params-card" id="optionParamsCard">
           <!-- Simulation parameters summary will be rendered here by JS -->
         </div>
@@ -50,7 +51,6 @@
             <option value="put">Put</option>
           </select>
 
-          <button type="button" id="importParams" class="import-btn">Import from Main Simulator</button>
           <button id="calculateOption">Calculate</button>
         </div>
         <!-- Results -->

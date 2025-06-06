@@ -56,74 +56,129 @@ document.addEventListener('DOMContentLoaded', () => {
     return sorted[lower] * (upper - idx) + sorted[upper] * (idx - lower);
   }
 
-  // Chart.js histogram helper
-  let payoffChart = null;
-  function renderPayoffHistogram(payoffs) {
-    const ctx = document.getElementById('optionPayoffChart').getContext('2d');
-    // Bin payoffs for histogram
-    const nBins = 30;
-    const min = Math.min(...payoffs);
-    const max = Math.max(...payoffs);
-    const binWidth = (max - min) / nBins || 1;
-    const bins = Array(nBins).fill(0);
-    payoffs.forEach(val => {
-      let idx = Math.floor((val - min) / binWidth);
-      if (idx >= nBins) idx = nBins - 1;
-      if (idx < 0) idx = 0;
-      bins[idx]++;
-    });
-    const labels = bins.map((_, i) => (min + i * binWidth).toFixed(0));
-    // Destroy previous chart if exists
-    if (payoffChart) {
-      payoffChart.destroy();
-    }
-    payoffChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Payoff Distribution',
-          data: bins,
-          backgroundColor: 'rgba(91, 155, 213, 0.7)',
-          borderColor: 'rgba(91, 155, 213, 1)',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return `Count: ${context.parsed.y}`;
-              }
-            }
-          }
-        },
-        scales: {
-          x: {
-            title: { display: true, text: 'Payoff ($)' }
-          },
-          y: {
-            title: { display: true, text: 'Frequency' },
-            beginAtZero: true
-          }
-        }
-      }
-    });
-  }
-
   // Render simulation parameters summary card
   function renderParamsCard(params) {
     const card = document.getElementById('optionParamsCard');
     card.innerHTML = `
-      <div><span class="param-label">Starting Market Price:</span> <span class="param-value">$${params.initialSpot.toLocaleString()}</span></div>
-      <div><span class="param-label">13-Week Market Forecast:</span> <span class="param-value">$${params.forecastedRate.toLocaleString()}</span></div>
-      <div><span class="param-label">Volatility:</span> <span class="param-value">${(params.volatility * 100).toFixed(2)}%</span></div>
-      <div><span class="param-label">Simulations:</span> <span class="param-value">${params.nSimulations.toLocaleString()}</span></div>
+      <div class="param-row"><span class="param-label">Starting Market Price:</span> <span class="param-value">$${params.initialSpot.toLocaleString()}</span></div>
+      <div class="param-row"><span class="param-label">13-Week Market Forecast:</span> <span class="param-value">$${params.forecastedRate.toLocaleString()}</span></div>
+      <div class="param-row"><span class="param-label">Volatility:</span> <span class="param-value">${(params.volatility * 100).toFixed(2)}%</span></div>
+      <div class="param-row"><span class="param-label">Simulations:</span> <span class="param-value">${params.nSimulations.toLocaleString()}</span></div>
     `;
   }
+
+  // Export CSV button logic
+  const exportBtn = document.getElementById('exportOptionCSV');
+  exportBtn.disabled = true;
+  exportBtn.classList.add('disabled-btn');
+  exportBtn.title = 'Run a calculation first';
+
+  exportBtn.addEventListener('click', () => {
+    if (!lastPayoffResults || !Array.isArray(lastPayoffResults.payoffs)) {
+      exportBtn.title = 'Run a calculation first';
+      return;
+    }
+    exportBtn.title = '';
+    const { payoffs, stats, params } = lastPayoffResults;
+    let csv = 'Option Payoff Simulation Results\n';
+    csv += `Week,${params.week}\nStrike,${params.strike}\nType,${params.type}\nSimulations,${payoffs.length}\n`;
+    csv += `Mean,${stats.mean}\nMedian,${stats.median}\n5th Percentile,${stats.p5}\n95th Percentile,${stats.p95}\n\n`;
+    csv += 'Payoff\n';
+    csv += payoffs.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `option_payoff_week${params.week}_${params.type}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // Chart.js histogram helper
+  let payoffChart = null;
+  function renderPayoffHistogram(payoffs) {
+    try {
+      const ctx = document.getElementById('optionPayoffChart').getContext('2d');
+      // Bin payoffs for histogram
+      const nBins = 30;
+      const min = Math.min(...payoffs);
+      const max = Math.max(...payoffs);
+      const binWidth = (max - min) / nBins || 1;
+      const bins = Array(nBins).fill(0);
+      payoffs.forEach(val => {
+        let idx = Math.floor((val - min) / binWidth);
+        if (idx >= nBins) idx = nBins - 1;
+        if (idx < 0) idx = 0;
+        bins[idx]++;
+      });
+      const labels = bins.map((_, i) => (min + i * binWidth).toFixed(0));
+      // Destroy previous chart if exists
+      if (payoffChart) {
+        payoffChart.destroy();
+      }
+      payoffChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Payoff Distribution',
+            data: bins,
+            backgroundColor: 'rgba(91, 155, 213, 0.7)',
+            borderColor: 'rgba(91, 155, 213, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `Count: ${context.parsed.y}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'Payoff ($)' }
+            },
+            y: {
+              title: { display: true, text: 'Frequency' },
+              beginAtZero: true
+            }
+          }
+        }
+      });
+      document.getElementById('optionPayoffChart').classList.remove('histogram-error');
+    } catch (err) {
+      document.getElementById('optionPayoffChart').classList.add('histogram-error');
+      document.getElementById('optionPayoffChart').innerText = 'Error rendering histogram.';
+      console.error('Histogram error:', err);
+    }
+  }
+
+  // Use importedParams if available, otherwise defaults
+  let importedParams = null;
+
+  function getSimulationParams() {
+    if (importedParams) {
+      return { ...importedParams };
+    }
+    return {
+      initialSpot: 3000,
+      forecastedRate: 3200,
+      volatility: 0.03,
+      weeks: 13,
+      nSimulations: 10000
+    };
+  }
+
+  // Initial render
+  renderParamsCard(getSimulationParams());
 
   // Import from Main Simulator functionality
   document.getElementById('importParams').addEventListener('click', () => {
@@ -154,24 +209,13 @@ document.addEventListener('DOMContentLoaded', () => {
     renderParamsCard(importedParams);
   });
 
-  // Use importedParams if available, otherwise defaults
-  let importedParams = null;
+  // Store last results for export
+  let lastPayoffResults = null;
 
-  function getSimulationParams() {
-    if (importedParams) {
-      return { ...importedParams };
-    }
-    return {
-      initialSpot: 3000,
-      forecastedRate: 3200,
-      volatility: 0.03,
-      weeks: 13,
-      nSimulations: 10000
-    };
+  function showResults(payoffs, stats, params) {
+    lastPayoffResults = { payoffs, stats, params };
+    // ... existing code ...
   }
-
-  // Initial render
-  renderParamsCard(getSimulationParams());
 
   // Calculate button event
   document.getElementById('calculateOption').addEventListener('click', () => {
@@ -195,15 +239,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (errorMsg) {
       document.getElementById('optionPayoffStats').innerHTML = `<span style="color: #ED7D31; font-weight: bold;">${errorMsg}</span>`;
       if (payoffChart) payoffChart.destroy();
+      exportBtn.disabled = true;
+      exportBtn.classList.add('disabled-btn');
+      exportBtn.title = 'Run a calculation first';
       return;
     }
-
-    // Simulation parameters (defaults for now)
-    // const initialSpot = 3000;
-    // const forecastedRate = 3200;
-    // const volatility = 0.03; // 3% weekly
-    // const weeks = 13;
-    // const nSimulations = 10000;
 
     const { initialSpot, forecastedRate, volatility, weeks, nSimulations } = getSimulationParams();
 
@@ -239,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Display result
     document.getElementById('optionPayoffStats').innerHTML =
-      `<div><strong>Expected ${type} payoff (Week ${week}, Strike $${strike.toFixed(2)}):</strong> $${meanPayoff.toFixed(2)}</div>` +
+      `<div><strong style="color: #ED7D31;">Expected ${type} payoff (Week ${week}, Strike $${strike.toFixed(2)}):</strong> $${meanPayoff.toFixed(2)}</div>` +
       `<div>Median: $${medianPayoff.toFixed(2)}</div>` +
       `<div>5th Percentile: $${p5.toFixed(2)}</div>` +
       `<div>95th Percentile: $${p95.toFixed(2)}</div>`;
@@ -250,39 +290,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Store last results for export
     lastPayoffResults = { payoffs, stats: { mean: meanPayoff, median: medianPayoff, p5, p95 }, params: { week, strike, type } };
 
+    // Enable export button
+    exportBtn.disabled = false;
+    exportBtn.classList.remove('disabled-btn');
+    exportBtn.title = '';
+
     // After using getSimulationParams(), update the card in case defaults changed
     renderParamsCard(getSimulationParams());
   });
-
-  // Export CSV functionality
-  const exportBtn = document.getElementById('exportOptionCSV');
-  exportBtn.addEventListener('click', () => {
-    if (!lastPayoffResults || !Array.isArray(lastPayoffResults.payoffs)) {
-      alert('Please run a calculation first.');
-      return;
-    }
-    const { payoffs, stats, params } = lastPayoffResults;
-    let csv = 'Option Payoff Simulation Results\n';
-    csv += `Week,${params.week}\nStrike,${params.strike}\nType,${params.type}\nSimulations,${payoffs.length}\n`;
-    csv += `Mean,${stats.mean}\nMedian,${stats.median}\n5th Percentile,${stats.p5}\n95th Percentile,${stats.p95}\n\n`;
-    csv += 'Payoff\n';
-    csv += payoffs.join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `option_payoff_week${params.week}_${params.type}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  });
-
-  // Store last results for export
-  let lastPayoffResults = null;
-
-  function showResults(payoffs, stats, params) {
-    lastPayoffResults = { payoffs, stats, params };
-    // ... existing code ...
-  }
 }); 

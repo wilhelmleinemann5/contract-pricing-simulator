@@ -719,25 +719,66 @@ header p {
   box-shadow: 0 2px 8px rgba(68, 84, 106, 0.06);
   padding: 18px 24px 10px 24px;
   margin-bottom: 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 40px;
+  align-items: center;
+  font-size: 1.08rem;
+}
+.option-params-card .param-row {
   display: flex;
-  flex-wrap: wrap;
-  gap: 24px 40px;
-  align-items: flex-start;
-  font-size: 1.05rem;
+  align-items: center;
+  gap: 8px;
 }
 .option-params-card .param-label {
   color: var(--maersk-dark-2);
   font-weight: 500;
-  margin-right: 6px;
+  margin-right: 4px;
 }
 .option-params-card .param-value {
   color: var(--maersk-dark-1);
+  font-weight: 700;
+  margin-right: 12px;
+  font-size: 1.08rem;
+}
+.full-width {
+  width: 100%;
+  margin-bottom: 16px;
+  margin-top: 0;
+}
+.export-btn {
+  display: block;
+  margin: 18px auto 0 auto;
+  background: var(--maersk-accent-4);
+  color: var(--maersk-dark-1);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 24px;
   font-weight: 600;
-  margin-right: 18px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, opacity 0.2s;
+  box-shadow: 0 1px 4px rgba(68,84,106,0.06);
+}
+.export-btn:disabled, .export-btn.disabled-btn {
+  background: var(--maersk-accent-3);
+  color: var(--maersk-light-2);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.export-btn:hover:not(:disabled) {
+  background: var(--maersk-accent-1);
+  color: var(--maersk-light-1);
+}
+.histogram-error {
+  color: var(--maersk-accent-2);
+  font-weight: 600;
+  margin: 10px 0;
+  text-align: center;
 }
 @media (max-width: 700px) {
   .option-params-card {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 8px 0;
     padding: 10px 8px 6px 8px;
     font-size: 0.98rem;
