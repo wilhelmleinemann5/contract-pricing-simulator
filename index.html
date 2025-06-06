@@ -73,6 +73,28 @@
                 </div>
 
                 <button id="runSimulation" class="run-btn">Run Simulation</button>
+
+                <div class="scenario-section">
+                    <h3>Scenario Management</h3>
+                    
+                    <div class="input-group">
+                        <label for="scenarioName">Scenario Name</label>
+                        <input type="text" id="scenarioName" placeholder="e.g., Current Market Q1">
+                    </div>
+                    
+                    <div class="scenario-buttons">
+                        <button id="saveScenario" class="scenario-btn save-btn">Save Scenario</button>
+                        <button id="toggleComparison" class="scenario-btn compare-btn">Compare Scenarios</button>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="savedScenarios">Load Saved Scenario</label>
+                        <select id="savedScenarios">
+                            <option value="">-- Select Scenario --</option>
+                        </select>
+                        <button id="deleteScenario" class="scenario-btn delete-btn">Delete</button>
+                    </div>
+                </div>
             </div>
 
             <div class="results-panel">
@@ -107,6 +129,30 @@
                         <div id="contractStats" class="stats-grid">
                             <!-- Contract pricing stats will be populated by JavaScript -->
                         </div>
+                    </div>
+                </div>
+
+                <div id="comparisonSection" class="comparison-section hidden">
+                    <h2>Scenario Comparison</h2>
+                    <div class="comparison-table-container">
+                        <table id="comparisonTable" class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Scenario</th>
+                                    <th>Start Price</th>
+                                    <th>13w Forecast</th>
+                                    <th>Volatility</th>
+                                    <th>Volume Discount</th>
+                                    <th>1-Month Rate</th>
+                                    <th>3-Month Rate</th>
+                                    <th>Rate Difference</th>
+                                    <th>Premium %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comparisonTableBody">
+                                <!-- Comparison rows will be populated by JavaScript -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

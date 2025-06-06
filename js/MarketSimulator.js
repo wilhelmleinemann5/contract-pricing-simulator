@@ -1,6 +1,8 @@
 export default class MarketSimulator {
     constructor() {
         this.chart = null;
+        this.savedScenarios = this.loadScenariosFromStorage();
+        this.comparisonVisible = false;
         this.initializeEventListeners();
         // Only run initial simulation after a short delay to ensure DOM is ready
         setTimeout(() => {
@@ -16,6 +18,17 @@ export default class MarketSimulator {
         }
         runButton.addEventListener('click', () => this.runSimulation());
 
+        // Scenario management event listeners
+        const saveButton = document.getElementById('saveScenario');
+        const loadSelect = document.getElementById('savedScenarios');
+        const deleteButton = document.getElementById('deleteScenario');
+        const compareButton = document.getElementById('toggleComparison');
+
+        if (saveButton) saveButton.addEventListener('click', () => this.saveScenario());
+        if (loadSelect) loadSelect.addEventListener('change', () => this.loadScenario());
+        if (deleteButton) deleteButton.addEventListener('click', () => this.deleteScenario());
+        if (compareButton) compareButton.addEventListener('click', () => this.toggleComparison());
+
         // Add enter key support for inputs
         const inputs = document.querySelectorAll('input');
         inputs.forEach(input => {
@@ -25,6 +38,9 @@ export default class MarketSimulator {
                 }
             });
         });
+
+        // Initialize scenario dropdown
+        this.updateScenarioDropdown();
     }
 
     // Generate random normal distribution using Box-Muller transform
@@ -109,6 +125,7 @@ export default class MarketSimulator {
         this.updateStatistics(results, initialSpot, forecastedRate);
         this.updateContractStatistics(results, volumeDiscount);
         this.updateSuggestedRates(initialSpot, forecastedRate, volatility, weeklyDrift, nSimulations, volumeDiscount);
+        this.updateComparisonTable();
         
         console.log('Simulation completed successfully');
     }
@@ -575,5 +592,202 @@ export default class MarketSimulator {
             console.error('Error in initial simulation:', error);
             // Don't show alert on initial load, just log the error
         }
+    }
+
+    // Scenario Management Methods
+    getCurrentScenarioData() {
+        return {
+            name: document.getElementById('scenarioName').value || 'Unnamed Scenario',
+            initialSpot: parseFloat(document.getElementById('initialSpot').value),
+            forecastedRate: parseFloat(document.getElementById('forecastedRate').value),
+            volatility: parseFloat(document.getElementById('volatility').value),
+            weeks: parseInt(document.getElementById('weeks').value),
+            simulations: parseInt(document.getElementById('simulations').value),
+            volumeDiscount: parseFloat(document.getElementById('volumeDiscount').value),
+            timestamp: new Date().toISOString()
+        };
+    }
+
+    saveScenario() {
+        try {
+            const scenarioData = this.getCurrentScenarioData();
+            
+            if (!scenarioData.name.trim()) {
+                alert('Please enter a scenario name');
+                return;
+            }
+
+            // Check if scenario name already exists
+            if (this.savedScenarios.find(s => s.name === scenarioData.name)) {
+                if (!confirm(`Scenario "${scenarioData.name}" already exists. Overwrite?`)) {
+                    return;
+                }
+                // Remove existing scenario
+                this.savedScenarios = this.savedScenarios.filter(s => s.name !== scenarioData.name);
+            }
+
+            this.savedScenarios.push(scenarioData);
+            this.saveScenariosToStorage();
+            this.updateScenarioDropdown();
+            
+            // Clear the scenario name field
+            document.getElementById('scenarioName').value = '';
+            
+            console.log(`Scenario "${scenarioData.name}" saved successfully`);
+            alert(`Scenario "${scenarioData.name}" saved!`);
+        } catch (error) {
+            console.error('Error saving scenario:', error);
+            alert('Error saving scenario: ' + error.message);
+        }
+    }
+
+    loadScenario() {
+        try {
+            const selectedName = document.getElementById('savedScenarios').value;
+            if (!selectedName) return;
+
+            const scenario = this.savedScenarios.find(s => s.name === selectedName);
+            if (!scenario) {
+                alert('Scenario not found');
+                return;
+            }
+
+            // Load scenario data into form
+            document.getElementById('initialSpot').value = scenario.initialSpot;
+            document.getElementById('forecastedRate').value = scenario.forecastedRate;
+            document.getElementById('volatility').value = scenario.volatility;
+            document.getElementById('weeks').value = scenario.weeks;
+            document.getElementById('simulations').value = scenario.simulations;
+            document.getElementById('volumeDiscount').value = scenario.volumeDiscount;
+
+            console.log(`Scenario "${selectedName}" loaded successfully`);
+            
+            // Automatically run simulation with loaded data
+            this.runSimulation();
+        } catch (error) {
+            console.error('Error loading scenario:', error);
+            alert('Error loading scenario: ' + error.message);
+        }
+    }
+
+    deleteScenario() {
+        try {
+            const selectedName = document.getElementById('savedScenarios').value;
+            if (!selectedName) {
+                alert('Please select a scenario to delete');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to delete scenario "${selectedName}"?`)) {
+                this.savedScenarios = this.savedScenarios.filter(s => s.name !== selectedName);
+                this.saveScenariosToStorage();
+                this.updateScenarioDropdown();
+                this.updateComparisonTable();
+                console.log(`Scenario "${selectedName}" deleted successfully`);
+            }
+        } catch (error) {
+            console.error('Error deleting scenario:', error);
+            alert('Error deleting scenario: ' + error.message);
+        }
+    }
+
+    loadScenariosFromStorage() {
+        try {
+            const stored = localStorage.getItem('contractSimulatorScenarios');
+            return stored ? JSON.parse(stored) : [];
+        } catch (error) {
+            console.error('Error loading scenarios from storage:', error);
+            return [];
+        }
+    }
+
+    saveScenariosToStorage() {
+        try {
+            localStorage.setItem('contractSimulatorScenarios', JSON.stringify(this.savedScenarios));
+        } catch (error) {
+            console.error('Error saving scenarios to storage:', error);
+        }
+    }
+
+    updateScenarioDropdown() {
+        const dropdown = document.getElementById('savedScenarios');
+        if (!dropdown) return;
+
+        // Clear existing options except the first one
+        dropdown.innerHTML = '<option value="">-- Select Scenario --</option>';
+
+        // Add saved scenarios
+        this.savedScenarios.forEach(scenario => {
+            const option = document.createElement('option');
+            option.value = scenario.name;
+            option.textContent = scenario.name;
+            dropdown.appendChild(option);
+        });
+    }
+
+    toggleComparison() {
+        this.comparisonVisible = !this.comparisonVisible;
+        const comparisonSection = document.getElementById('comparisonSection');
+        const toggleButton = document.getElementById('toggleComparison');
+        
+        if (this.comparisonVisible) {
+            comparisonSection.classList.remove('hidden');
+            toggleButton.textContent = 'Hide Comparison';
+            this.updateComparisonTable();
+        } else {
+            comparisonSection.classList.add('hidden');
+            toggleButton.textContent = 'Compare Scenarios';
+        }
+    }
+
+    updateComparisonTable() {
+        if (!this.comparisonVisible) return;
+
+        const tableBody = document.getElementById('comparisonTableBody');
+        if (!tableBody) return;
+
+        // Clear existing rows
+        tableBody.innerHTML = '';
+
+        if (this.savedScenarios.length === 0) {
+            const row = tableBody.insertRow();
+            const cell = row.insertCell();
+            cell.colSpan = 9;
+            cell.textContent = 'No saved scenarios to compare';
+            cell.style.textAlign = 'center';
+            cell.style.fontStyle = 'italic';
+            cell.style.color = '#6c757d';
+            return;
+        }
+
+        // Add rows for each saved scenario
+        this.savedScenarios.forEach(scenario => {
+            const row = tableBody.insertRow();
+            
+            // Calculate contract rates for this scenario
+            const totalDrift = Math.log(scenario.forecastedRate / scenario.initialSpot);
+            const weeklyDrift = totalDrift / 13;
+            const oneMonthRate = scenario.initialSpot * Math.exp(weeklyDrift * 4) * (1 - scenario.volumeDiscount / 100);
+            const threeMonthRate = scenario.initialSpot * Math.exp(weeklyDrift * 13) * (1 - scenario.volumeDiscount / 100);
+            const rateDifference = threeMonthRate - oneMonthRate;
+            const premium = ((threeMonthRate / oneMonthRate - 1) * 100);
+
+            // Populate cells
+            row.insertCell().textContent = scenario.name;
+            row.insertCell().textContent = `$${scenario.initialSpot.toFixed(0)}`;
+            row.insertCell().textContent = `$${scenario.forecastedRate.toFixed(0)}`;
+            row.insertCell().textContent = `${scenario.volatility.toFixed(1)}%`;
+            row.insertCell().textContent = `${scenario.volumeDiscount.toFixed(1)}%`;
+            row.insertCell().textContent = `$${oneMonthRate.toFixed(0)}`;
+            row.insertCell().textContent = `$${threeMonthRate.toFixed(0)}`;
+            
+            const diffCell = row.insertCell();
+            diffCell.textContent = `$${rateDifference.toFixed(0)}`;
+            diffCell.className = rateDifference > 0 ? 'positive' : 'negative';
+            
+            const premiumCell = row.insertCell();
+            premiumCell.textContent = `${premium.toFixed(1)}%`;
+            premiumCell.className = premium > 0 ? 'positive' : 'negative';
+        });
     }
 }

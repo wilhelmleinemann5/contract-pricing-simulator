@@ -237,4 +237,133 @@ header p {
     .stats-container {
         grid-template-columns: 1fr;
     }
+}
+
+/* Scenario Management Styles */
+.scenario-section {
+    margin-top: 30px;
+    padding-top: 25px;
+    border-top: 2px solid #e9ecef;
+}
+
+.scenario-section h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.scenario-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.scenario-btn {
+    flex: 1;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.save-btn {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+}
+
+.save-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
+.compare-btn {
+    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+    color: white;
+}
+
+.compare-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(155, 89, 182, 0.3);
+}
+
+.delete-btn {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    margin-top: 10px;
+    width: 100%;
+    padding: 8px;
+    font-size: 0.85rem;
+}
+
+.delete-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+}
+
+/* Comparison Table Styles */
+.comparison-section {
+    background: white;
+    margin-top: 30px;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e9ecef;
+}
+
+.comparison-section h2 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.comparison-table-container {
+    overflow-x: auto;
+}
+
+.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.comparison-table th,
+.comparison-table td {
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.comparison-table th {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.comparison-table td {
+    color: #495057;
+}
+
+.comparison-table tbody tr:hover {
+    background: rgba(52, 152, 219, 0.05);
+}
+
+.comparison-table .positive {
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.comparison-table .negative {
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+.hidden {
+    display: none;
 } 
