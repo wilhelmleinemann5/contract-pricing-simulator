@@ -44,26 +44,30 @@ class MarketSimulator {
     performSimulation() {
         // Get input values
         const initialSpot = parseFloat(document.getElementById('initialSpot').value);
-        const contractRate = parseFloat(document.getElementById('contractRate').value);
+        const forecastedRate = parseFloat(document.getElementById('forecastedRate').value);
         const volatility = parseFloat(document.getElementById('volatility').value) / 100; // Convert percentage to decimal
         const weeks = parseInt(document.getElementById('weeks').value);
         const nSimulations = parseInt(document.getElementById('simulations').value);
 
         // Validate inputs
-        if (isNaN(initialSpot) || isNaN(contractRate) || isNaN(volatility) || isNaN(weeks) || isNaN(nSimulations)) {
+        if (isNaN(initialSpot) || isNaN(forecastedRate) || isNaN(volatility) || isNaN(weeks) || isNaN(nSimulations)) {
             alert('Please ensure all fields contain valid numbers.');
             return;
         }
 
+        // Calculate drift parameter: ln(forecasted_rate/starting_rate) / weeks
+        const totalDrift = Math.log(forecastedRate / initialSpot);
+        const weeklyDrift = totalDrift / weeks;
+
         // Run Monte Carlo simulation
-        const results = this.monteCarloSimulation(initialSpot, contractRate, volatility, weeks, nSimulations);
+        const results = this.monteCarloSimulation(initialSpot, forecastedRate, volatility, weeklyDrift, weeks, nSimulations);
         
         // Update chart and statistics
         this.updateChart(results);
-        this.updateStatistics(results, initialSpot, contractRate);
+        this.updateStatistics(results, initialSpot, forecastedRate);
     }
 
-    monteCarloSimulation(initialSpot, contractRate, volatility, weeks, nSimulations) {
+    monteCarloSimulation(initialSpot, forecastedRate, volatility, weeklyDrift, weeks, nSimulations) {
         const pricePaths = [];
         const finalPrices = [];
 
@@ -72,8 +76,9 @@ class MarketSimulator {
             let currentPrice = initialSpot;
 
             for (let week = 1; week < weeks; week++) {
-                // Generate random return using lognormal distribution
-                const randomReturn = this.randomNormal(0, volatility);
+                // Generate random return with drift using geometric Brownian motion
+                // dS = S * (μ*dt + σ*dW) where μ is drift, σ is volatility, dW is random normal
+                const randomReturn = this.randomNormal(weeklyDrift, volatility);
                 currentPrice = currentPrice * Math.exp(randomReturn);
                 path.push(currentPrice);
             }
@@ -108,8 +113,9 @@ class MarketSimulator {
             finalPrices,
             percentiles,
             weeks,
-            contractRate,
-            initialSpot
+            forecastedRate,
+            initialSpot,
+            weeklyDrift
         };
     }
 
@@ -196,8 +202,8 @@ class MarketSimulator {
                         borderWidth: 3
                     },
                     {
-                        label: 'Contract Rate',
-                        data: weeks.map(() => results.contractRate),
+                        label: 'Forecasted Rate',
+                        data: weeks.map(() => results.forecastedRate),
                         borderColor: '#27ae60',
                         backgroundColor: '#27ae60',
                         fill: false,
@@ -210,43 +216,80 @@ class MarketSimulator {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        top: 20,
+                        bottom: 20,
+                        left: 10,
+                        right: 10
+                    }
+                },
                 scales: {
                     x: {
                         title: {
                             display: true,
-                            text: 'Weeks'
+                            text: 'Weeks',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            display: true,
+                            color: 'rgba(0,0,0,0.1)'
                         }
                     },
                     y: {
                         title: {
                             display: true,
-                            text: 'Price ($)'
+                            text: 'Price ($)',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            display: true,
+                            color: 'rgba(0,0,0,0.1)'
                         }
                     }
                 },
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Simulated Spot Price Evolution vs Contract Rate',
+                        text: 'Simulated Spot Price Evolution vs Forecasted Rate',
                         font: {
-                            size: 16,
+                            size: 18,
                             weight: 'bold'
+                        },
+                        padding: {
+                            top: 10,
+                            bottom: 20
                         }
                     },
                     legend: {
                         display: true,
-                        position: 'top'
+                        position: 'top',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true
+                        }
                     }
                 },
                 interaction: {
                     intersect: false,
                     mode: 'index'
+                },
+                elements: {
+                    point: {
+                        hoverRadius: 6
+                    }
                 }
             }
         });
     }
 
-    updateStatistics(results, initialSpot, contractRate) {
+    updateStatistics(results, initialSpot, forecastedRate) {
         const finalPrices = results.finalPrices.sort((a, b) => a - b);
         const mean = finalPrices.reduce((a, b) => a + b, 0) / finalPrices.length;
         const median = this.percentile(finalPrices, 50);
@@ -276,17 +319,17 @@ class MarketSimulator {
         // Risk metrics
         const probAbove50pct = (finalPrices.filter(p => p > initialSpot * 1.5).length / finalPrices.length * 100);
         const probBelow50pct = (finalPrices.filter(p => p < initialSpot * 0.5).length / finalPrices.length * 100);
-        const probAboveContract = (finalPrices.filter(p => p > contractRate).length / finalPrices.length * 100);
-        const probBelowContract = (finalPrices.filter(p => p < contractRate).length / finalPrices.length * 100);
+        const probAboveForecast = (finalPrices.filter(p => p > forecastedRate).length / finalPrices.length * 100);
+        const probBelowForecast = (finalPrices.filter(p => p < forecastedRate).length / finalPrices.length * 100);
         
         const riskMetricsHTML = `
             <div class="stat-item">
-                <span class="stat-label">Price > Contract Rate</span>
-                <span class="stat-value ${probAboveContract > 50 ? 'positive' : ''}">${probAboveContract.toFixed(1)}%</span>
+                <span class="stat-label">Price > Forecast Rate</span>
+                <span class="stat-value ${probAboveForecast > 50 ? 'positive' : ''}">${probAboveForecast.toFixed(1)}%</span>
             </div>
             <div class="stat-item">
-                <span class="stat-label">Price < Contract Rate</span>
-                <span class="stat-value ${probBelowContract > 50 ? 'negative' : ''}">${probBelowContract.toFixed(1)}%</span>
+                <span class="stat-label">Price < Forecast Rate</span>
+                <span class="stat-value ${probBelowForecast > 50 ? 'negative' : ''}">${probBelowForecast.toFixed(1)}%</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Price +50% Higher</span>
