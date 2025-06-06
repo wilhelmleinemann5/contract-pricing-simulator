@@ -1,3 +1,18 @@
+:root {
+  --maersk-dark-1:      #000000;
+  --maersk-light-1:     #FFFFFF;
+  --maersk-dark-2:      #44546A;
+  --maersk-light-2:     #E7E6E6;
+  --maersk-accent-1:    #5B9BD5;
+  --maersk-accent-2:    #ED7D31;
+  --maersk-accent-3:    #A5A5A5;
+  --maersk-accent-4:    #FFC000;
+  --maersk-accent-5:    #4472C4;
+  --maersk-accent-6:    #70AD47;
+  --maersk-hyperlink:   #0563C1;
+  --maersk-follow-link: #954F72;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -6,7 +21,7 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--maersk-light-2);
     min-height: 100vh;
     padding: 20px;
     overflow-x: hidden;
@@ -15,15 +30,15 @@ body {
 .container {
     max-width: 1600px;
     margin: 0 auto;
-    background: white;
+    background: var(--maersk-light-1);
     border-radius: 20px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
 
 header {
-    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-    color: white;
+    background: var(--maersk-dark-2);
+    color: var(--maersk-light-1);
     padding: 40px;
     text-align: center;
 }
@@ -51,13 +66,13 @@ header p {
 }
 
 .input-panel {
-    background: #f8f9fa;
+    background: var(--maersk-light-1);
     padding: 40px;
-    border-right: 1px solid #e9ecef;
+    border-right: 1px solid var(--maersk-light-2);
 }
 
 .input-panel h2 {
-    color: #2c3e50;
+    color: var(--maersk-dark-2);
     margin-bottom: 30px;
     font-size: 1.4rem;
     font-weight: 600;
@@ -70,7 +85,7 @@ header p {
 .input-group label {
     display: block;
     margin-bottom: 8px;
-    color: #495057;
+    color: var(--maersk-dark-2);
     font-weight: 500;
     font-size: 0.9rem;
 }
@@ -79,25 +94,25 @@ header p {
 .input-group select {
     width: 100%;
     padding: 12px 16px;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--maersk-light-2);
     border-radius: 8px;
     font-size: 1rem;
     transition: all 0.3s ease;
-    background: white;
+    background: var(--maersk-light-1);
 }
 
 .input-group input:focus,
 .input-group select:focus {
     outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    border-color: var(--maersk-accent-1);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--maersk-accent-1) 10%, transparent);
 }
 
 .run-btn {
     width: 100%;
     padding: 16px;
-    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-    color: white;
+    background: var(--maersk-accent-6);
+    color: var(--maersk-light-1);
     border: none;
     border-radius: 10px;
     font-size: 1.1rem;
@@ -109,7 +124,7 @@ header p {
 
 .run-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(46, 204, 113, 0.3);
+    box-shadow: 0 10px 25px color-mix(in srgb, var(--maersk-accent-6) 30%, transparent);
 }
 
 .run-btn:active {
@@ -118,7 +133,7 @@ header p {
 
 .results-panel {
     padding: 40px;
-    background: white;
+    background: var(--maersk-light-1);
     overflow-x: hidden;
     min-width: 0;
     width: 100%;
@@ -126,12 +141,12 @@ header p {
 }
 
 .chart-container {
-    background: white;
+    background: var(--maersk-light-1);
     border-radius: 12px;
     padding: 20px;
     margin-bottom: 30px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--maersk-light-2);
     height: 500px;
     position: relative;
 }
@@ -148,15 +163,15 @@ header p {
 }
 
 .stat-card {
-    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    background: var(--maersk-light-1);
     border-radius: 12px;
     padding: 25px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--maersk-light-2);
 }
 
 .stat-card h3 {
-    color: #2c3e50;
+    color: var(--maersk-dark-2);
     margin-bottom: 20px;
     font-size: 1.2rem;
     font-weight: 600;
@@ -172,7 +187,7 @@ header p {
     justify-content: space-between;
     align-items: center;
     padding: 12px 0;
-    border-bottom: 1px solid #f1f3f4;
+    border-bottom: 1px solid var(--maersk-light-2);
 }
 
 .stat-item:last-child {
@@ -181,22 +196,22 @@ header p {
 
 .stat-label {
     font-weight: 500;
-    color: #495057;
+    color: var(--maersk-dark-2);
     font-size: 0.9rem;
 }
 
 .stat-value {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--maersk-dark-2);
     font-size: 1rem;
 }
 
 .stat-value.positive {
-    color: #27ae60;
+    color: var(--maersk-accent-6);
 }
 
 .stat-value.negative {
-    color: #e74c3c;
+    color: var(--maersk-accent-2);
 }
 
 .loading {
@@ -205,7 +220,7 @@ header p {
 }
 
 .loading .run-btn {
-    background: #95a5a6;
+    background: var(--maersk-accent-3);
     cursor: not-allowed;
 }
 
@@ -234,7 +249,7 @@ header p {
     
     .input-panel {
         border-right: none;
-        border-bottom: 1px solid #e9ecef;
+        border-bottom: 1px solid var(--maersk-light-2);
     }
     
     .results-panel {
@@ -368,7 +383,7 @@ header p {
 }
 
 .save-btn {
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    background: var(--maersk-accent-1);
     color: white;
 }
 
@@ -378,7 +393,7 @@ header p {
 }
 
 .compare-btn {
-    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+    background: var(--maersk-accent-5);
     color: white;
 }
 
@@ -388,7 +403,7 @@ header p {
 }
 
 .delete-btn {
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    background: var(--maersk-accent-2);
     color: white;
     margin-top: 10px;
     width: 100%;
@@ -403,25 +418,25 @@ header p {
 
 /* Comparison Table Styles */
 .comparison-section {
-    background: white;
-    margin: 20px;
-    padding: 20px;
+    background: var(--maersk-light-1);
+    padding: 30px;
+    margin-top: 20px;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e9ecef;
-    width: calc(100vw - 40px);
-    max-width: calc(100vw - 40px);
+    border: 1px solid var(--maersk-light-2);
     overflow: hidden;
-    box-sizing: border-box;
     position: relative;
+    max-width: calc(100vw - 40px);
+    width: 100%;
 }
 
 .comparison-section h2 {
-    color: #2c3e50;
-    margin-bottom: 15px;
-    font-size: 1.4rem;
+    color: var(--maersk-dark-2);
+    margin-bottom: 20px;
+    font-size: 1.5rem;
     font-weight: 600;
-    margin-top: 0;
+    border-bottom: 2px solid var(--maersk-light-2);
+    padding-bottom: 10px;
 }
 
 .comparison-table-container {
@@ -429,82 +444,72 @@ header p {
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     border-radius: 8px;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--maersk-light-2);
     position: relative;
     width: 100%;
     max-width: 100%;
-    background: white;
+    background: var(--maersk-light-1);
 }
 
 .comparison-table {
-    width: auto;
+    width: 100%;
     border-collapse: separate;
-    border-spacing: 0;
-    font-size: 0.8rem;
-    min-width: 800px;
-    border: none;
-    border-radius: 8px;
-    overflow: hidden;
-    margin: 0;
-    white-space: nowrap;
+    border-spacing: 0 5px;
+    color: var(--maersk-dark-2);
 }
 
 .comparison-table th,
 .comparison-table td {
-    padding: 8px 12px;
+    padding: 12px 15px;
     text-align: left;
-    border-bottom: 1px solid #e9ecef;
-    border-right: 1px solid #e9ecef;
-    white-space: nowrap;
-    min-width: 70px;
-    font-size: 0.8rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--maersk-light-2);
 }
 
 .comparison-table th:first-child,
 .comparison-table td:first-child {
-    min-width: 100px;
-    font-weight: 600;
     position: sticky;
     left: 0;
-    background: white;
-    z-index: 2;
+    background-color: var(--maersk-light-1);
+    z-index: 10;
+    min-width: 150px;
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .comparison-table th:last-child,
 .comparison-table td:last-child {
-    border-right: none;
+    padding-right: 20px;
 }
 
 .comparison-table thead th {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    font-weight: 700;
-    color: #2c3e50;
-    font-size: 0.75rem;
+    background-color: var(--maersk-light-2);
+    color: var(--maersk-dark-2);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
     position: sticky;
     top: 0;
-    z-index: 10;
-    border-bottom: 2px solid #dee2e6;
+    z-index: 20;
 }
 
 .comparison-table thead th:first-child {
-    z-index: 11;
-}
-
-.comparison-table td {
-    color: #495057;
+    z-index: 30;
 }
 
 .comparison-table tbody tr:hover {
-    background: rgba(52, 152, 219, 0.05);
+    background-color: color-mix(in srgb, var(--maersk-accent-1) 10%, transparent);
 }
 
 .comparison-table .positive {
-    color: #27ae60;
+    color: var(--maersk-accent-6);
     font-weight: 600;
 }
 
 .comparison-table .negative {
-    color: #e74c3c;
+    color: var(--maersk-accent-2);
     font-weight: 600;
 }
 
@@ -518,19 +523,19 @@ header p {
 
 /* Custom scrollbar for comparison table */
 .comparison-table-container::-webkit-scrollbar {
-    height: 6px;
+    height: 10px;
 }
 
 .comparison-table-container::-webkit-scrollbar-track {
-    background: #f8f9fa;
-    border-radius: 3px;
+    background: var(--maersk-light-2);
+    border-radius: 10px;
 }
 
 .comparison-table-container::-webkit-scrollbar-thumb {
-    background: #dee2e6;
-    border-radius: 3px;
+    background-color: var(--maersk-accent-3);
+    border-radius: 10px;
 }
 
 .comparison-table-container::-webkit-scrollbar-thumb:hover {
-    background: #adb5bd;
+    background-color: var(--maersk-dark-2);
 } 

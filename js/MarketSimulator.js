@@ -145,6 +145,9 @@ export default class MarketSimulator {
         // Run Monte Carlo simulation
         const results = this.monteCarloSimulation(initialSpot, forecastedRate, volatility, weeklyDrift, weeks, nSimulations, volumeDiscount);
         
+        // Store results for use in suggested rates calculation
+        this.lastSimulationResults = results;
+        
         console.log('Simulation results:', results);
 
         // Update chart and statistics
@@ -257,8 +260,8 @@ export default class MarketSimulator {
                         {
                             label: '5th-95th Percentile',
                             data: weeks.map(i => results.percentiles.p95[i]),
-                            borderColor: 'rgba(200, 200, 200, 0.5)',
-                            backgroundColor: 'rgba(200, 200, 200, 0.2)',
+                            borderColor: 'rgba(165, 165, 165, 0.5)',
+                            backgroundColor: 'rgba(165, 165, 165, 0.2)',
                             fill: '+1',
                             pointRadius: 0,
                             borderWidth: 1
@@ -266,8 +269,8 @@ export default class MarketSimulator {
                         {
                             label: '5th Percentile',
                             data: weeks.map(i => results.percentiles.p5[i]),
-                            borderColor: 'rgba(200, 200, 200, 0.5)',
-                            backgroundColor: 'rgba(200, 200, 200, 0.2)',
+                            borderColor: 'rgba(165, 165, 165, 0.5)',
+                            backgroundColor: 'rgba(165, 165, 165, 0.2)',
                             fill: false,
                             pointRadius: 0,
                             borderWidth: 1
@@ -275,8 +278,8 @@ export default class MarketSimulator {
                         {
                             label: '25th-75th Percentile',
                             data: weeks.map(i => results.percentiles.p75[i]),
-                            borderColor: 'rgba(100, 150, 200, 0.7)',
-                            backgroundColor: 'rgba(100, 150, 200, 0.3)',
+                            borderColor: 'rgba(91, 155, 213, 0.7)',
+                            backgroundColor: 'rgba(91, 155, 213, 0.3)',
                             fill: '+1',
                             pointRadius: 0,
                             borderWidth: 2
@@ -284,8 +287,8 @@ export default class MarketSimulator {
                         {
                             label: '25th Percentile',
                             data: weeks.map(i => results.percentiles.p25[i]),
-                            borderColor: 'rgba(100, 150, 200, 0.7)',
-                            backgroundColor: 'rgba(100, 150, 200, 0.3)',
+                            borderColor: 'rgba(91, 155, 213, 0.7)',
+                            backgroundColor: 'rgba(91, 155, 213, 0.3)',
                             fill: false,
                             pointRadius: 0,
                             borderWidth: 2
@@ -293,8 +296,8 @@ export default class MarketSimulator {
                         {
                             label: 'Mean Price',
                             data: weeks.map(i => results.percentiles.mean[i]),
-                            borderColor: '#3498db',
-                            backgroundColor: '#3498db',
+                            borderColor: '#4472C4',
+                            backgroundColor: '#4472C4',
                             fill: false,
                             pointRadius: 2,
                             borderWidth: 3
@@ -306,8 +309,8 @@ export default class MarketSimulator {
                                 const meanContractPrice = contractPrices.reduce((a, b) => a + b, 0) / contractPrices.length;
                                 return meanContractPrice;
                             }),
-                            borderColor: '#e74c3c',
-                            backgroundColor: '#e74c3c',
+                            borderColor: '#ED7D31',
+                            backgroundColor: '#ED7D31',
                             fill: false,
                             pointRadius: 0,
                             borderWidth: 3,
@@ -338,7 +341,7 @@ export default class MarketSimulator {
                             },
                             grid: {
                                 display: true,
-                                color: 'rgba(0,0,0,0.1)'
+                                color: 'rgba(0,0,0,0.05)'
                             }
                         },
                         y: {
@@ -352,7 +355,7 @@ export default class MarketSimulator {
                             },
                             grid: {
                                 display: true,
-                                color: 'rgba(0,0,0,0.1)'
+                                color: 'rgba(0,0,0,0.05)'
                             }
                         }
                     },
@@ -528,32 +531,62 @@ export default class MarketSimulator {
         try {
             console.log('Calculating suggested contract rates...');
             
-            // Run actual Monte Carlo simulations for 1-month and 3-month contracts
-            // This ensures volatility is properly accounted for in the pricing
+            // Get the current contract duration from the main simulation
+            const currentWeeks = parseInt(document.getElementById('weeks').value);
             
-            // Calculate 1-month (4-week) contract rate using Monte Carlo
-            const oneMonthResults = this.monteCarloSimulation(
-                initialSpot, 
-                forecastedRate, 
-                volatility, 
-                weeklyDrift, 
-                4, // 4 weeks
-                Math.min(nSimulations, 5000), // Limit simulations for performance
-                volumeDiscount
-            );
-            const oneMonthRate = oneMonthResults.syntheticContractPrices.reduce((a, b) => a + b, 0) / oneMonthResults.syntheticContractPrices.length;
+            let oneMonthRate, threeMonthRate;
             
-            // Calculate 3-month (13-week) contract rate using Monte Carlo
-            const threeMonthResults = this.monteCarloSimulation(
-                initialSpot, 
-                forecastedRate, 
-                volatility, 
-                weeklyDrift, 
-                13, // 13 weeks
-                Math.min(nSimulations, 5000), // Limit simulations for performance
-                volumeDiscount
-            );
-            const threeMonthRate = threeMonthResults.syntheticContractPrices.reduce((a, b) => a + b, 0) / threeMonthResults.syntheticContractPrices.length;
+            // Calculate 1-month (4-week) contract rate
+            if (currentWeeks === 4) {
+                // Use main simulation results if current duration is 4 weeks
+                if (!this.lastSimulationResults || !this.lastSimulationResults.syntheticContractPrices) {
+                    throw new Error('Main simulation results not available for 1-month rate calculation');
+                }
+                oneMonthRate = this.lastSimulationResults.syntheticContractPrices.reduce((a, b) => a + b, 0) / this.lastSimulationResults.syntheticContractPrices.length;
+                console.log('Using main simulation results for 1-month rate:', oneMonthRate);
+            } else {
+                // Run separate simulation for 4 weeks using EXACT same parameters as main simulation
+                const oneMonthResults = this.monteCarloSimulation(
+                    initialSpot, 
+                    forecastedRate, 
+                    volatility, 
+                    weeklyDrift, 
+                    4,
+                    Math.min(nSimulations, 5000),
+                    volumeDiscount
+                );
+                oneMonthRate = oneMonthResults.syntheticContractPrices.reduce((a, b) => a + b, 0) / oneMonthResults.syntheticContractPrices.length;
+                console.log('Calculated separate 1-month rate:', oneMonthRate);
+            }
+            
+            // Calculate 3-month (13-week) contract rate
+            if (currentWeeks === 13) {
+                // Use main simulation results if current duration is 13 weeks
+                if (!this.lastSimulationResults || !this.lastSimulationResults.syntheticContractPrices) {
+                    throw new Error('Main simulation results not available for 3-month rate calculation');
+                }
+                threeMonthRate = this.lastSimulationResults.syntheticContractPrices.reduce((a, b) => a + b, 0) / this.lastSimulationResults.syntheticContractPrices.length;
+                console.log('Using main simulation results for 3-month rate:', threeMonthRate);
+            } else {
+                // Run separate simulation for 13 weeks using EXACT same parameters as main simulation
+                const threeMonthResults = this.monteCarloSimulation(
+                    initialSpot, 
+                    forecastedRate, 
+                    volatility, 
+                    weeklyDrift, 
+                    13,
+                    Math.min(nSimulations, 5000),
+                    volumeDiscount
+                );
+                threeMonthRate = threeMonthResults.syntheticContractPrices.reduce((a, b) => a + b, 0) / threeMonthResults.syntheticContractPrices.length;
+                console.log('Calculated separate 3-month rate:', threeMonthRate);
+            }
+            
+            // Verify that when current duration is 13 weeks, the 3-month rate matches the main contract price
+            if (currentWeeks === 13) {
+                const mainContractPrice = this.lastSimulationResults.syntheticContractPrices.reduce((a, b) => a + b, 0) / this.lastSimulationResults.syntheticContractPrices.length;
+                console.log('Verification - Main contract price:', mainContractPrice, '3-month rate:', threeMonthRate, 'Match:', Math.abs(mainContractPrice - threeMonthRate) < 0.01);
+            }
             
             // Calculate rate difference and percentage
             const rateDifference = threeMonthRate - oneMonthRate;
@@ -599,7 +632,9 @@ export default class MarketSimulator {
                 oneMonthRate: oneMonthRate.toFixed(0),
                 threeMonthRate: threeMonthRate.toFixed(0),
                 rateDifference: rateDifference.toFixed(0),
-                volatilityUsed: (volatility * 100).toFixed(1) + '%'
+                volatilityUsed: (volatility * 100).toFixed(1) + '%',
+                currentWeeks: currentWeeks,
+                usedMainResults: currentWeeks === 4 || currentWeeks === 13
             });
         } catch (error) {
             console.error('Error updating suggested rates:', error);
@@ -686,10 +721,6 @@ export default class MarketSimulator {
             document.getElementById('scenarioName').value = '';
             
             console.log(`Scenario "${scenarioData.name}" saved successfully`);
-            
-            // Show success message
-            const message = `Scenario "${scenarioData.name}" saved! Total scenarios: ${this.savedScenarios.length}`;
-            alert(message);
             
             // If comparison is visible, make sure it updates
             if (this.comparisonVisible) {
