@@ -528,16 +528,32 @@ export default class MarketSimulator {
         try {
             console.log('Calculating suggested contract rates...');
             
-            // Simplified calculation using current simulation results for efficiency
-            // Calculate expected rates for 1-month and 3-month contracts based on drift
+            // Run actual Monte Carlo simulations for 1-month and 3-month contracts
+            // This ensures volatility is properly accounted for in the pricing
             
-            // For 1-month (4 weeks): expected price evolution
-            const oneMonthExpectedSpot = initialSpot * Math.exp(weeklyDrift * 4);
-            const oneMonthRate = oneMonthExpectedSpot * (1 - volumeDiscount);
+            // Calculate 1-month (4-week) contract rate using Monte Carlo
+            const oneMonthResults = this.monteCarloSimulation(
+                initialSpot, 
+                forecastedRate, 
+                volatility, 
+                weeklyDrift, 
+                4, // 4 weeks
+                Math.min(nSimulations, 5000), // Limit simulations for performance
+                volumeDiscount
+            );
+            const oneMonthRate = oneMonthResults.syntheticContractPrices.reduce((a, b) => a + b, 0) / oneMonthResults.syntheticContractPrices.length;
             
-            // For 3-month (13 weeks): expected price evolution  
-            const threeMonthExpectedSpot = initialSpot * Math.exp(weeklyDrift * 13);
-            const threeMonthRate = threeMonthExpectedSpot * (1 - volumeDiscount);
+            // Calculate 3-month (13-week) contract rate using Monte Carlo
+            const threeMonthResults = this.monteCarloSimulation(
+                initialSpot, 
+                forecastedRate, 
+                volatility, 
+                weeklyDrift, 
+                13, // 13 weeks
+                Math.min(nSimulations, 5000), // Limit simulations for performance
+                volumeDiscount
+            );
+            const threeMonthRate = threeMonthResults.syntheticContractPrices.reduce((a, b) => a + b, 0) / threeMonthResults.syntheticContractPrices.length;
             
             // Calculate rate difference and percentage
             const rateDifference = threeMonthRate - oneMonthRate;
@@ -582,7 +598,8 @@ export default class MarketSimulator {
             console.log('Suggested contract rates updated successfully', {
                 oneMonthRate: oneMonthRate.toFixed(0),
                 threeMonthRate: threeMonthRate.toFixed(0),
-                rateDifference: rateDifference.toFixed(0)
+                rateDifference: rateDifference.toFixed(0),
+                volatilityUsed: (volatility * 100).toFixed(1) + '%'
             });
         } catch (error) {
             console.error('Error updating suggested rates:', error);
@@ -852,11 +869,33 @@ export default class MarketSimulator {
             console.log(`Adding scenario ${index + 1}:`, scenario.name);
             const row = tableBody.insertRow();
             
-            // Calculate contract rates for this scenario
+            // Calculate contract rates for this scenario using Monte Carlo (consistent with suggested rates)
             const totalDrift = Math.log(scenario.forecastedRate / scenario.initialSpot);
             const weeklyDrift = totalDrift / 13;
-            const oneMonthRate = scenario.initialSpot * Math.exp(weeklyDrift * 4) * (1 - scenario.volumeDiscount / 100);
-            const threeMonthRate = scenario.initialSpot * Math.exp(weeklyDrift * 13) * (1 - scenario.volumeDiscount / 100);
+            
+            // Run Monte Carlo simulations for accurate rates that include volatility
+            const oneMonthResults = this.monteCarloSimulation(
+                scenario.initialSpot,
+                scenario.forecastedRate,
+                scenario.volatility / 100, // Convert percentage to decimal
+                weeklyDrift,
+                4, // 4 weeks
+                1000, // Smaller simulation count for performance in comparison table
+                scenario.volumeDiscount / 100 // Convert percentage to decimal
+            );
+            const oneMonthRate = oneMonthResults.syntheticContractPrices.reduce((a, b) => a + b, 0) / oneMonthResults.syntheticContractPrices.length;
+            
+            const threeMonthResults = this.monteCarloSimulation(
+                scenario.initialSpot,
+                scenario.forecastedRate,
+                scenario.volatility / 100, // Convert percentage to decimal
+                weeklyDrift,
+                13, // 13 weeks
+                1000, // Smaller simulation count for performance in comparison table
+                scenario.volumeDiscount / 100 // Convert percentage to decimal
+            );
+            const threeMonthRate = threeMonthResults.syntheticContractPrices.reduce((a, b) => a + b, 0) / threeMonthResults.syntheticContractPrices.length;
+            
             const rateDifference = threeMonthRate - oneMonthRate;
             const premium = ((threeMonthRate / oneMonthRate - 1) * 100);
 
