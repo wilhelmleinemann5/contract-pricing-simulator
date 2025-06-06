@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Option Pricing | Contract Pricing Simulator</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <h1>Option Pricing</h1>
+    <p>Analyze and price call/put-like instruments on simulated contract rates</p>
+  </header>
+  <nav class="main-nav">
+    <a href="index.html">Main Simulator</a>
+    <a href="option-pricing.html" class="active">Option Pricing</a>
+  </nav>
+  <main class="container">
+    <section class="option-pricing-ui">
+      <h2>Option Payoff Calculator <span class="info-icon" tabindex="0" aria-label="About option payoffs" data-tooltip="A call option pays if the simulated rate exceeds the strike; a put pays if it falls below. This tool uses Monte Carlo simulation to estimate the value of such instruments.">ℹ️</span></h2>
+      <!-- Inputs -->
+      <div class="option-inputs">
+        <label for="optionWeek">Week
+          <span class="info-icon" tabindex="0" aria-label="Select week" data-tooltip="Choose which week of the simulation to evaluate the option payoff.">ℹ️</span>
+        </label>
+        <select id="optionWeek"></select>
+
+        <label for="optionStrike">Strike
+          <span class="info-icon" tabindex="0" aria-label="Strike info" data-tooltip="Set the strike as an absolute value or a percentage of the initial market rate.">ℹ️</span>
+        </label>
+        <input type="number" id="optionStrike" placeholder="e.g. 3500" min="0">
+        <select id="strikeMode">
+          <option value="absolute">Absolute</option>
+          <option value="percent">% of Initial</option>
+        </select>
+
+        <label for="optionType">Type
+          <span class="info-icon" tabindex="0" aria-label="Call/Put info" data-tooltip="Call: Pays if simulated rate > strike. Put: Pays if simulated rate < strike.">ℹ️</span>
+        </label>
+        <select id="optionType">
+          <option value="call">Call</option>
+          <option value="put">Put</option>
+        </select>
+
+        <button type="button" id="importParams" class="import-btn">Import from Main Simulator</button>
+        <button id="calculateOption">Calculate</button>
+      </div>
+      <!-- Results -->
+      <div class="option-results">
+        <h3>Results</h3>
+        <div id="optionPayoffStats">
+          <span class="info-icon" tabindex="0" aria-label="Stats info" data-tooltip="Mean: Average payoff. Median: Middle value. 5th/95th: Range of likely outcomes.">ℹ️</span>
+        </div>
+        <canvas id="optionPayoffChart" width="600" height="250"></canvas>
+        <button type="button" id="exportOptionCSV" class="export-btn">Export CSV</button>
+      </div>
+    </section>
+  </main>
+  <script src="js/optionPricing.js"></script>
+</body>
+</html> 

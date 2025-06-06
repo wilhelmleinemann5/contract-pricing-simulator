@@ -538,4 +538,173 @@ header p {
 
 .comparison-table-container::-webkit-scrollbar-thumb:hover {
     background-color: var(--maersk-dark-2);
+}
+
+/* Option Pricing UI Styles */
+.option-pricing-ui {
+  background: var(--maersk-light-1);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(68, 84, 106, 0.08);
+  padding: 32px 24px;
+  margin: 32px auto;
+  max-width: 700px;
+}
+.option-pricing-ui h2 {
+  color: var(--maersk-accent-1);
+  margin-bottom: 20px;
+}
+.option-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  align-items: flex-end;
+  margin-bottom: 32px;
+}
+.option-inputs label {
+  font-weight: 600;
+  color: var(--maersk-dark-2);
+  margin-right: 8px;
+}
+.option-inputs input,
+.option-inputs select {
+  padding: 8px 12px;
+  border: 1px solid var(--maersk-accent-3);
+  border-radius: 6px;
+  font-size: 1rem;
+  background: var(--maersk-light-2);
+  color: var(--maersk-dark-1);
+}
+#calculateOption {
+  background: var(--maersk-accent-1);
+  color: var(--maersk-light-1);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#calculateOption:hover {
+  background: var(--maersk-accent-5);
+}
+.option-results {
+  background: var(--maersk-light-2);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 12px;
+  box-shadow: 0 2px 8px rgba(68, 84, 106, 0.04);
+}
+#optionPayoffStats {
+  font-size: 1.1rem;
+  margin-bottom: 18px;
+  color: var(--maersk-dark-2);
+}
+#optionPayoffStats strong {
+  color: var(--maersk-accent-2);
+}
+#optionPayoffChart {
+  background: var(--maersk-light-1);
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(68, 84, 106, 0.06);
+}
+.main-nav .active {
+  color: var(--maersk-accent-2);
+  font-weight: 700;
+  border-bottom: 2px solid var(--maersk-accent-2);
+}
+
+/* Responsive for mobile */
+@media (max-width: 700px) {
+  .option-pricing-ui {
+    padding: 16px 4px;
+    margin: 16px 0;
+  }
+  .option-inputs {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .option-results {
+    padding: 10px;
+  }
+}
+
+.info-icon {
+  display: inline-block;
+  font-size: 1.1em;
+  color: var(--maersk-accent-2);
+  margin-left: 4px;
+  cursor: pointer;
+  vertical-align: middle;
+  position: relative;
+}
+.info-icon:focus {
+  outline: 2px solid var(--maersk-accent-1);
+}
+.info-icon[data-tooltip]:hover::after,
+.info-icon[data-tooltip]:focus::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  top: 120%;
+  transform: translateX(-50%);
+  background: var(--maersk-dark-2);
+  color: var(--maersk-light-1);
+  padding: 8px 12px;
+  border-radius: 6px;
+  white-space: pre-line;
+  font-size: 0.95em;
+  z-index: 100;
+  min-width: 180px;
+  box-shadow: 0 2px 8px rgba(68,84,106,0.12);
+  pointer-events: none;
+}
+.info-icon[data-tooltip]:hover::before,
+.info-icon[data-tooltip]:focus::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 115%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: var(--maersk-dark-2) transparent transparent transparent;
+  z-index: 101;
+}
+
+.export-btn {
+  background: var(--maersk-accent-4);
+  color: var(--maersk-dark-1);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 18px;
+  transition: background 0.2s;
+  box-shadow: 0 1px 4px rgba(68,84,106,0.06);
+}
+.export-btn:hover {
+  background: var(--maersk-accent-1);
+  color: var(--maersk-light-1);
+}
+
+.import-btn {
+  background: var(--maersk-accent-5);
+  color: var(--maersk-light-1);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 8px;
+  margin-right: 8px;
+  transition: background 0.2s;
+  box-shadow: 0 1px 4px rgba(68,84,106,0.06);
+}
+.import-btn:hover {
+  background: var(--maersk-accent-1);
+  color: var(--maersk-dark-1);
 } 
