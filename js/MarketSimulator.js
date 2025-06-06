@@ -1,4 +1,4 @@
-class MarketSimulator {
+export default class MarketSimulator {
     constructor() {
         this.chart = null;
         this.initializeEventListeners();
@@ -577,8 +577,3 @@ class MarketSimulator {
         }
     }
 }
-
-// Initialize the application when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-    new MarketSimulator();
-}); 
