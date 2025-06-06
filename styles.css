@@ -248,26 +248,27 @@ header p {
     }
     
     .comparison-section {
+        margin: 10px;
         padding: 15px;
-        margin-top: 20px;
+        width: calc(100vw - 20px);
+        max-width: calc(100vw - 20px);
     }
     
     .comparison-table {
+        min-width: 700px;
         font-size: 0.75rem;
-        min-width: 800px;
     }
     
     .comparison-table th,
     .comparison-table td {
         padding: 6px 8px;
         min-width: 60px;
-        max-width: 90px;
+        font-size: 0.75rem;
     }
     
     .comparison-table th:first-child,
     .comparison-table td:first-child {
         min-width: 80px;
-        max-width: 100px;
     }
 }
 
@@ -301,20 +302,37 @@ header p {
     }
     
     .comparison-section {
+        margin: 5px;
         padding: 10px;
-        margin-top: 15px;
+        width: calc(100vw - 10px);
+        max-width: calc(100vw - 10px);
+        border-radius: 8px;
+    }
+    
+    .comparison-section h2 {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
     }
     
     .comparison-table {
+        min-width: 600px;
         font-size: 0.7rem;
-        min-width: 700px;
     }
     
     .comparison-table th,
     .comparison-table td {
         padding: 4px 6px;
-        min-width: 55px;
-        max-width: 80px;
+        min-width: 50px;
+        font-size: 0.7rem;
+    }
+    
+    .comparison-table th:first-child,
+    .comparison-table td:first-child {
+        min-width: 70px;
+    }
+    
+    .comparison-table thead th {
+        font-size: 0.65rem;
     }
 }
 
@@ -386,16 +404,16 @@ header p {
 /* Comparison Table Styles */
 .comparison-section {
     background: white;
-    margin-top: 30px;
+    margin: 20px;
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     border: 1px solid #e9ecef;
-    width: 100%;
-    max-width: 100%;
+    width: calc(100vw - 40px);
+    max-width: calc(100vw - 40px);
     overflow: hidden;
     box-sizing: border-box;
-    transform: translateZ(0);
+    position: relative;
 }
 
 .comparison-section h2 {
@@ -403,6 +421,7 @@ header p {
     margin-bottom: 15px;
     font-size: 1.4rem;
     font-weight: 600;
+    margin-top: 0;
 }
 
 .comparison-table-container {
@@ -414,56 +433,41 @@ header p {
     position: relative;
     width: 100%;
     max-width: 100%;
-}
-
-.comparison-table-container::-webkit-scrollbar {
-    height: 8px;
-}
-
-.comparison-table-container::-webkit-scrollbar-track {
-    background: #f8f9fa;
-    border-radius: 4px;
-}
-
-.comparison-table-container::-webkit-scrollbar-thumb {
-    background: #dee2e6;
-    border-radius: 4px;
-}
-
-.comparison-table-container::-webkit-scrollbar-thumb:hover {
-    background: #adb5bd;
+    background: white;
 }
 
 .comparison-table {
-    width: 100%;
+    width: auto;
     border-collapse: separate;
     border-spacing: 0;
     font-size: 0.8rem;
-    min-width: 900px;
+    min-width: 800px;
     border: none;
     border-radius: 8px;
     overflow: hidden;
     margin: 0;
+    white-space: nowrap;
 }
 
 .comparison-table th,
 .comparison-table td {
-    padding: 10px 12px;
+    padding: 8px 12px;
     text-align: left;
     border-bottom: 1px solid #e9ecef;
     border-right: 1px solid #e9ecef;
     white-space: nowrap;
-    min-width: 80px;
-    max-width: 120px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    min-width: 70px;
+    font-size: 0.8rem;
 }
 
 .comparison-table th:first-child,
 .comparison-table td:first-child {
     min-width: 100px;
-    max-width: 140px;
     font-weight: 600;
+    position: sticky;
+    left: 0;
+    background: white;
+    z-index: 2;
 }
 
 .comparison-table th:last-child,
@@ -475,11 +479,15 @@ header p {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     font-weight: 700;
     color: #2c3e50;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     position: sticky;
     top: 0;
     z-index: 10;
     border-bottom: 2px solid #dee2e6;
+}
+
+.comparison-table thead th:first-child {
+    z-index: 11;
 }
 
 .comparison-table td {
@@ -506,4 +514,23 @@ header p {
 
 .comparison-section.hidden {
     display: none !important;
+}
+
+/* Custom scrollbar for comparison table */
+.comparison-table-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.comparison-table-container::-webkit-scrollbar-track {
+    background: #f8f9fa;
+    border-radius: 3px;
+}
+
+.comparison-table-container::-webkit-scrollbar-thumb {
+    background: #dee2e6;
+    border-radius: 3px;
+}
+
+.comparison-table-container::-webkit-scrollbar-thumb:hover {
+    background: #adb5bd;
 } 
