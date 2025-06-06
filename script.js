@@ -1,4 +1,4 @@
-import { saveScenario } from './scenarioStore.js';
+import { saveScenario } from './js/scenarioStore.js';
 
 class MarketSimulator {
     constructor() {
