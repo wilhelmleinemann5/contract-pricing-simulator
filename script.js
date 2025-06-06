@@ -246,16 +246,6 @@ class MarketSimulator {
                             borderWidth: 2
                         },
                         {
-                            label: 'Median Price',
-                            data: weeks.map(i => results.percentiles.p50[i]),
-                            borderColor: '#2c3e50',
-                            backgroundColor: '#2c3e50',
-                            fill: false,
-                            pointRadius: 2,
-                            borderWidth: 3,
-                            borderDash: [5, 5]
-                        },
-                        {
                             label: 'Mean Price',
                             data: weeks.map(i => results.percentiles.mean[i]),
                             borderColor: '#3498db',
@@ -263,16 +253,6 @@ class MarketSimulator {
                             fill: false,
                             pointRadius: 2,
                             borderWidth: 3
-                        },
-                        {
-                            label: 'Forecasted Rate',
-                            data: weeks.map(() => results.forecastedRate),
-                            borderColor: '#27ae60',
-                            backgroundColor: '#27ae60',
-                            fill: false,
-                            pointRadius: 0,
-                            borderWidth: 3,
-                            borderDash: [10, 5]
                         },
                         {
                             label: 'Mean Contract Price',
@@ -447,7 +427,6 @@ class MarketSimulator {
             console.log('Updating contract statistics...');
             const contractPrices = results.syntheticContractPrices.sort((a, b) => a - b);
             const contractMean = contractPrices.reduce((a, b) => a + b, 0) / contractPrices.length;
-            const contractMedian = this.percentile(contractPrices, 50);
             const contractP5 = this.percentile(contractPrices, 5);
             const contractP95 = this.percentile(contractPrices, 95);
             
@@ -462,10 +441,6 @@ class MarketSimulator {
                 <div class="stat-item">
                     <span class="stat-label">Mean Contract Price</span>
                     <span class="stat-value">$${contractMean.toFixed(0)}</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Median Contract Price</span>
-                    <span class="stat-value">$${contractMedian.toFixed(0)}</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">5th Percentile</span>
