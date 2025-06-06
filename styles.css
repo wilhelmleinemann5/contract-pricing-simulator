@@ -45,6 +45,9 @@ header p {
     grid-template-columns: 350px 1fr;
     min-height: 600px;
     gap: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .input-panel {
@@ -116,8 +119,10 @@ header p {
 .results-panel {
     padding: 40px;
     background: white;
-    overflow-x: auto;
+    overflow-x: hidden;
     min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .chart-container {
@@ -224,6 +229,7 @@ header p {
 @media (max-width: 1024px) {
     .main-content {
         grid-template-columns: 1fr;
+        overflow-x: hidden;
     }
     
     .input-panel {
@@ -231,20 +237,36 @@ header p {
         border-bottom: 1px solid #e9ecef;
     }
     
+    .results-panel {
+        padding: 20px;
+        overflow-x: hidden;
+    }
+    
     .stats-container {
         grid-template-columns: 1fr 1fr;
         grid-template-rows: auto auto;
     }
     
+    .comparison-section {
+        padding: 15px;
+        margin-top: 20px;
+    }
+    
     .comparison-table {
         font-size: 0.75rem;
-        min-width: 900px;
+        min-width: 800px;
     }
     
     .comparison-table th,
     .comparison-table td {
         padding: 6px 8px;
-        min-width: 65px;
+        min-width: 60px;
+        max-width: 90px;
+    }
+    
+    .comparison-table th:first-child,
+    .comparison-table td:first-child {
+        min-width: 80px;
         max-width: 100px;
     }
 }
@@ -252,6 +274,13 @@ header p {
 @media (max-width: 768px) {
     body {
         padding: 10px;
+        overflow-x: hidden;
+    }
+    
+    .container {
+        max-width: 100%;
+        margin: 0;
+        border-radius: 10px;
     }
     
     header {
@@ -264,11 +293,28 @@ header p {
     
     .input-panel,
     .results-panel {
-        padding: 30px 20px;
+        padding: 20px 15px;
     }
     
     .stats-container {
         grid-template-columns: 1fr;
+    }
+    
+    .comparison-section {
+        padding: 10px;
+        margin-top: 15px;
+    }
+    
+    .comparison-table {
+        font-size: 0.7rem;
+        min-width: 700px;
+    }
+    
+    .comparison-table th,
+    .comparison-table td {
+        padding: 4px 6px;
+        min-width: 55px;
+        max-width: 80px;
     }
 }
 
@@ -341,27 +387,33 @@ header p {
 .comparison-section {
     background: white;
     margin-top: 30px;
-    padding: 30px;
+    padding: 20px;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     border: 1px solid #e9ecef;
     width: 100%;
+    max-width: 100%;
     overflow: hidden;
+    box-sizing: border-box;
+    transform: translateZ(0);
 }
 
 .comparison-section h2 {
     color: #2c3e50;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     font-size: 1.4rem;
     font-weight: 600;
 }
 
 .comparison-table-container {
     overflow-x: auto;
+    overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     border-radius: 8px;
     border: 1px solid #e9ecef;
     position: relative;
+    width: 100%;
+    max-width: 100%;
 }
 
 .comparison-table-container::-webkit-scrollbar {
@@ -386,11 +438,12 @@ header p {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    font-size: 0.85rem;
-    min-width: 1000px;
+    font-size: 0.8rem;
+    min-width: 900px;
     border: none;
     border-radius: 8px;
     overflow: hidden;
+    margin: 0;
 }
 
 .comparison-table th,
@@ -448,5 +501,9 @@ header p {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
+}
+
+.comparison-section.hidden {
+    display: none !important;
 } 
