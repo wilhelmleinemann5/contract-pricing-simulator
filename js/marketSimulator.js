@@ -1,3 +1,5 @@
+import { saveScenario } from './scenarioStore.js';
+
 class MarketSimulator {
     constructor() {
         this.chart = null;
@@ -109,7 +111,21 @@ class MarketSimulator {
         this.updateStatistics(results, initialSpot, forecastedRate);
         this.updateContractStatistics(results, volumeDiscount);
         this.updateSuggestedRates(initialSpot, forecastedRate, volatility, weeklyDrift, nSimulations, volumeDiscount);
-        
+
+        // Persist scenario parameters and results
+        saveScenario({
+            parameters: {
+                initialSpot,
+                forecastedRate,
+                volatility,
+                weeks,
+                nSimulations,
+                volumeDiscount
+            },
+            results,
+            timestamp: Date.now()
+        });
+
         console.log('Simulation completed successfully');
     }
 
@@ -579,6 +595,8 @@ class MarketSimulator {
 }
 
 // Initialize the application when the page loads
-document.addEventListener('DOMContentLoaded', function() {
+export default MarketSimulator;
+
+document.addEventListener('DOMContentLoaded', () => {
     new MarketSimulator();
-}); 
+});
