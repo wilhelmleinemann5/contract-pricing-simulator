@@ -1,9 +1,35 @@
 export default class MarketSimulator {
+    // Test localStorage functionality
+    testLocalStorage() {
+        try {
+            const testKey = 'test';
+            const testValue = 'test-value';
+            localStorage.setItem(testKey, testValue);
+            const retrieved = localStorage.getItem(testKey);
+            localStorage.removeItem(testKey);
+            console.log('localStorage test:', retrieved === testValue ? 'PASSED' : 'FAILED');
+            return retrieved === testValue;
+        } catch (error) {
+            console.error('localStorage test FAILED:', error);
+            return false;
+        }
+    }
+
     constructor() {
         this.chart = null;
+        
+        // Test localStorage functionality
+        console.log('Initializing MarketSimulator...');
+        if (!this.testLocalStorage()) {
+            console.warn('localStorage not available - scenarios will not persist');
+        }
+        
         this.savedScenarios = this.loadScenariosFromStorage();
+        console.log('Loaded scenarios from storage:', this.savedScenarios.length);
+        
         this.comparisonVisible = false;
         this.initializeEventListeners();
+        
         // Only run initial simulation after a short delay to ensure DOM is ready
         setTimeout(() => {
             this.runInitialSimulation();
@@ -610,7 +636,9 @@ export default class MarketSimulator {
 
     saveScenario() {
         try {
+            console.log('Save scenario button clicked');
             const scenarioData = this.getCurrentScenarioData();
+            console.log('Current scenario data:', scenarioData);
             
             if (!scenarioData.name.trim()) {
                 alert('Please enter a scenario name');
@@ -618,23 +646,31 @@ export default class MarketSimulator {
             }
 
             // Check if scenario name already exists
-            if (this.savedScenarios.find(s => s.name === scenarioData.name)) {
+            const existingScenario = this.savedScenarios.find(s => s.name === scenarioData.name);
+            if (existingScenario) {
                 if (!confirm(`Scenario "${scenarioData.name}" already exists. Overwrite?`)) {
                     return;
                 }
                 // Remove existing scenario
                 this.savedScenarios = this.savedScenarios.filter(s => s.name !== scenarioData.name);
+                console.log('Removing existing scenario:', scenarioData.name);
             }
 
             this.savedScenarios.push(scenarioData);
+            console.log('Saved scenarios:', this.savedScenarios.length);
+            
             this.saveScenariosToStorage();
             this.updateScenarioDropdown();
+            this.updateComparisonTable(); // Always update comparison table
             
             // Clear the scenario name field
             document.getElementById('scenarioName').value = '';
             
             console.log(`Scenario "${scenarioData.name}" saved successfully`);
-            alert(`Scenario "${scenarioData.name}" saved!`);
+            
+            // Show success message
+            const message = `Scenario "${scenarioData.name}" saved! Total scenarios: ${this.savedScenarios.length}`;
+            alert(message);
         } catch (error) {
             console.error('Error saving scenario:', error);
             alert('Error saving scenario: ' + error.message);
@@ -730,21 +766,28 @@ export default class MarketSimulator {
         const comparisonSection = document.getElementById('comparisonSection');
         const toggleButton = document.getElementById('toggleComparison');
         
+        console.log('Toggling comparison view:', this.comparisonVisible);
+        
         if (this.comparisonVisible) {
             comparisonSection.classList.remove('hidden');
             toggleButton.textContent = 'Hide Comparison';
             this.updateComparisonTable();
+            console.log('Comparison table shown');
         } else {
             comparisonSection.classList.add('hidden');
             toggleButton.textContent = 'Compare Scenarios';
+            console.log('Comparison table hidden');
         }
     }
 
     updateComparisonTable() {
-        if (!this.comparisonVisible) return;
-
         const tableBody = document.getElementById('comparisonTableBody');
-        if (!tableBody) return;
+        if (!tableBody) {
+            console.warn('Comparison table body not found');
+            return;
+        }
+
+        console.log('Updating comparison table with', this.savedScenarios.length, 'scenarios');
 
         // Clear existing rows
         tableBody.innerHTML = '';
@@ -753,15 +796,17 @@ export default class MarketSimulator {
             const row = tableBody.insertRow();
             const cell = row.insertCell();
             cell.colSpan = 9;
-            cell.textContent = 'No saved scenarios to compare';
+            cell.textContent = 'No saved scenarios to compare. Save some scenarios first!';
             cell.style.textAlign = 'center';
             cell.style.fontStyle = 'italic';
             cell.style.color = '#6c757d';
+            cell.style.padding = '20px';
             return;
         }
 
         // Add rows for each saved scenario
-        this.savedScenarios.forEach(scenario => {
+        this.savedScenarios.forEach((scenario, index) => {
+            console.log(`Adding scenario ${index + 1}:`, scenario.name);
             const row = tableBody.insertRow();
             
             // Calculate contract rates for this scenario
@@ -789,5 +834,7 @@ export default class MarketSimulator {
             premiumCell.textContent = `${premium.toFixed(1)}%`;
             premiumCell.className = premium > 0 ? 'positive' : 'negative';
         });
+
+        console.log('Comparison table updated successfully');
     }
 }
