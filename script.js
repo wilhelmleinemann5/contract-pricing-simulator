@@ -108,6 +108,7 @@ class MarketSimulator {
         this.updateChart(results);
         this.updateStatistics(results, initialSpot, forecastedRate);
         this.updateContractStatistics(results, volumeDiscount);
+        this.updateSuggestedRates(initialSpot, forecastedRate, volatility, weeklyDrift, nSimulations, volumeDiscount);
         
         console.log('Simulation completed successfully');
     }
@@ -479,11 +480,70 @@ class MarketSimulator {
         }
     }
 
+    updateSuggestedRates(initialSpot, forecastedRate, volatility, weeklyDrift, nSimulations, volumeDiscount) {
+        try {
+            console.log('Calculating suggested contract rates...');
+            
+            // Calculate 1-month (4-week) contract rate
+            const oneMonthResults = this.monteCarloSimulation(initialSpot, forecastedRate, volatility, weeklyDrift, 4, nSimulations, volumeDiscount);
+            const oneMonthRate = oneMonthResults.syntheticContractPrices.reduce((a, b) => a + b, 0) / oneMonthResults.syntheticContractPrices.length;
+            
+            // Calculate 3-month (13-week) contract rate  
+            const threeMonthResults = this.monteCarloSimulation(initialSpot, forecastedRate, volatility, weeklyDrift, 13, nSimulations, volumeDiscount);
+            const threeMonthRate = threeMonthResults.syntheticContractPrices.reduce((a, b) => a + b, 0) / threeMonthResults.syntheticContractPrices.length;
+            
+            // Calculate rate difference and percentage
+            const rateDifference = threeMonthRate - oneMonthRate;
+            const rateIncrease = ((threeMonthRate / oneMonthRate - 1) * 100);
+            
+            // Display suggested rates
+            const suggestedRatesHTML = `
+                <div class="stat-item">
+                    <span class="stat-label">1-Month Contract Rate</span>
+                    <span class="stat-value">$${oneMonthRate.toFixed(0)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">3-Month Contract Rate</span>
+                    <span class="stat-value">$${threeMonthRate.toFixed(0)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Rate Difference</span>
+                    <span class="stat-value ${rateDifference > 0 ? 'positive' : 'negative'}">$${rateDifference.toFixed(0)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">3M vs 1M Premium</span>
+                    <span class="stat-value ${rateIncrease > 0 ? 'positive' : 'negative'}">${rateIncrease.toFixed(1)}%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Based on Forecast</span>
+                    <span class="stat-value">$${forecastedRate.toFixed(0)} (13w)</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Volume Discount</span>
+                    <span class="stat-value">${(volumeDiscount * 100).toFixed(1)}%</span>
+                </div>
+            `;
+
+            const suggestedRatesEl = document.getElementById('suggestedRates');
+            
+            if (!suggestedRatesEl) {
+                throw new Error('Suggested rates container not found in DOM');
+            }
+
+            suggestedRatesEl.innerHTML = suggestedRatesHTML;
+            
+            console.log('Suggested contract rates updated successfully');
+        } catch (error) {
+            console.error('Error updating suggested rates:', error);
+            throw error;
+        }
+    }
+
     runInitialSimulation() {
         try {
             console.log('Running initial simulation...');
             // Check if all required elements exist before running
-            const requiredElements = ['initialSpot', 'forecastedRate', 'volatility', 'weeks', 'simulations', 'volumeDiscount'];
+            const requiredElements = ['initialSpot', 'forecastedRate', 'volatility', 'weeks', 'simulations', 'volumeDiscount', 'priceStats', 'riskMetrics', 'contractStats', 'suggestedRates'];
             const missingElements = requiredElements.filter(id => !document.getElementById(id));
             
             if (missingElements.length > 0) {

@@ -133,7 +133,8 @@ header p {
 
 .stats-container {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
     gap: 20px;
 }
 
@@ -211,6 +212,7 @@ header p {
     
     .stats-container {
         grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
     }
 }
 
