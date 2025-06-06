@@ -484,13 +484,16 @@ class MarketSimulator {
         try {
             console.log('Calculating suggested contract rates...');
             
-            // Calculate 1-month (4-week) contract rate
-            const oneMonthResults = this.monteCarloSimulation(initialSpot, forecastedRate, volatility, weeklyDrift, 4, nSimulations, volumeDiscount);
-            const oneMonthRate = oneMonthResults.syntheticContractPrices.reduce((a, b) => a + b, 0) / oneMonthResults.syntheticContractPrices.length;
+            // Simplified calculation using current simulation results for efficiency
+            // Calculate expected rates for 1-month and 3-month contracts based on drift
             
-            // Calculate 3-month (13-week) contract rate  
-            const threeMonthResults = this.monteCarloSimulation(initialSpot, forecastedRate, volatility, weeklyDrift, 13, nSimulations, volumeDiscount);
-            const threeMonthRate = threeMonthResults.syntheticContractPrices.reduce((a, b) => a + b, 0) / threeMonthResults.syntheticContractPrices.length;
+            // For 1-month (4 weeks): expected price evolution
+            const oneMonthExpectedSpot = initialSpot * Math.exp(weeklyDrift * 4);
+            const oneMonthRate = oneMonthExpectedSpot * (1 - volumeDiscount);
+            
+            // For 3-month (13 weeks): expected price evolution  
+            const threeMonthExpectedSpot = initialSpot * Math.exp(weeklyDrift * 13);
+            const threeMonthRate = threeMonthExpectedSpot * (1 - volumeDiscount);
             
             // Calculate rate difference and percentage
             const rateDifference = threeMonthRate - oneMonthRate;
@@ -532,10 +535,25 @@ class MarketSimulator {
 
             suggestedRatesEl.innerHTML = suggestedRatesHTML;
             
-            console.log('Suggested contract rates updated successfully');
+            console.log('Suggested contract rates updated successfully', {
+                oneMonthRate: oneMonthRate.toFixed(0),
+                threeMonthRate: threeMonthRate.toFixed(0),
+                rateDifference: rateDifference.toFixed(0)
+            });
         } catch (error) {
             console.error('Error updating suggested rates:', error);
-            throw error;
+            // Don't re-throw to prevent breaking the entire simulation
+            
+            // Show error message in the panel
+            const suggestedRatesEl = document.getElementById('suggestedRates');
+            if (suggestedRatesEl) {
+                suggestedRatesEl.innerHTML = `
+                    <div class="stat-item">
+                        <span class="stat-label">Error</span>
+                        <span class="stat-value negative">Failed to calculate</span>
+                    </div>
+                `;
+            }
         }
     }
 
