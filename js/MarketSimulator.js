@@ -1,39 +1,40 @@
 export default class MarketSimulator {
-    // Test localStorage functionality
-    testLocalStorage() {
-        try {
-            const testKey = 'test';
-            const testValue = 'test-value';
-            localStorage.setItem(testKey, testValue);
-            const retrieved = localStorage.getItem(testKey);
-            localStorage.removeItem(testKey);
-            console.log('localStorage test:', retrieved === testValue ? 'PASSED' : 'FAILED');
-            return retrieved === testValue;
-        } catch (error) {
-            console.error('localStorage test FAILED:', error);
-            return false;
-        }
-    }
-
     constructor() {
         this.chart = null;
         
-        // Test localStorage functionality
+        // Initialize storage with fallback
         console.log('Initializing MarketSimulator...');
-        if (!this.testLocalStorage()) {
-            console.warn('localStorage not available - scenarios will not persist');
-        }
-        
+        this.storageAvailable = this.testLocalStorage();
         this.savedScenarios = this.loadScenariosFromStorage();
         console.log('Loaded scenarios from storage:', this.savedScenarios.length);
         
         this.comparisonVisible = false;
         this.initializeEventListeners();
         
+        // Update debug info
+        this.updateDebugInfo();
+        
         // Only run initial simulation after a short delay to ensure DOM is ready
         setTimeout(() => {
             this.runInitialSimulation();
         }, 100);
+    }
+
+    // Test localStorage functionality
+    testLocalStorage() {
+        try {
+            const testKey = 'contractSimulatorTest';
+            const testValue = 'test-value';
+            localStorage.setItem(testKey, testValue);
+            const retrieved = localStorage.getItem(testKey);
+            localStorage.removeItem(testKey);
+            const success = retrieved === testValue;
+            console.log('localStorage test:', success ? 'PASSED' : 'FAILED');
+            return success;
+        } catch (error) {
+            console.error('localStorage test FAILED:', error);
+            return false;
+        }
     }
 
     initializeEventListeners() {
@@ -662,6 +663,7 @@ export default class MarketSimulator {
             this.saveScenariosToStorage();
             this.updateScenarioDropdown();
             this.updateComparisonTable(); // Always update comparison table
+            this.updateDebugInfo(); // Update debug info
             
             // Clear the scenario name field
             document.getElementById('scenarioName').value = '';
@@ -671,10 +673,38 @@ export default class MarketSimulator {
             // Show success message
             const message = `Scenario "${scenarioData.name}" saved! Total scenarios: ${this.savedScenarios.length}`;
             alert(message);
+            
+            // If comparison is visible, make sure it updates
+            if (this.comparisonVisible) {
+                setTimeout(() => this.updateComparisonTable(), 100);
+            }
         } catch (error) {
             console.error('Error saving scenario:', error);
             alert('Error saving scenario: ' + error.message);
         }
+    }
+
+    // Add a test scenario for debugging
+    addTestScenario() {
+        console.log('Adding test scenario');
+        const testScenario = {
+            name: 'Test Scenario ' + Date.now(),
+            initialSpot: 3000,
+            forecastedRate: 3200,
+            volatility: 3,
+            weeks: 13,
+            simulations: 10000,
+            volumeDiscount: 5,
+            timestamp: new Date().toISOString()
+        };
+        
+        this.savedScenarios.push(testScenario);
+        this.updateScenarioDropdown();
+        this.updateComparisonTable();
+        this.updateDebugInfo();
+        
+        console.log('Test scenario added:', testScenario.name);
+        return testScenario;
     }
 
     loadScenario() {
@@ -728,9 +758,16 @@ export default class MarketSimulator {
     }
 
     loadScenariosFromStorage() {
+        if (!this.storageAvailable) {
+            console.warn('localStorage not available, using memory storage');
+            return this.savedScenarios || [];
+        }
+        
         try {
             const stored = localStorage.getItem('contractSimulatorScenarios');
-            return stored ? JSON.parse(stored) : [];
+            const scenarios = stored ? JSON.parse(stored) : [];
+            console.log('Loaded from localStorage:', scenarios);
+            return scenarios;
         } catch (error) {
             console.error('Error loading scenarios from storage:', error);
             return [];
@@ -738,8 +775,14 @@ export default class MarketSimulator {
     }
 
     saveScenariosToStorage() {
+        if (!this.storageAvailable) {
+            console.warn('localStorage not available, storing in memory only');
+            return;
+        }
+        
         try {
             localStorage.setItem('contractSimulatorScenarios', JSON.stringify(this.savedScenarios));
+            console.log('Saved to localStorage:', this.savedScenarios.length, 'scenarios');
         } catch (error) {
             console.error('Error saving scenarios to storage:', error);
         }
@@ -836,5 +879,13 @@ export default class MarketSimulator {
         });
 
         console.log('Comparison table updated successfully');
+    }
+
+    updateDebugInfo() {
+        const debugCount = document.getElementById('debugScenarioCount');
+        if (debugCount) {
+            debugCount.textContent = this.savedScenarios.length;
+        }
+        console.log('Debug info updated:', this.savedScenarios.length, 'scenarios');
     }
 }
