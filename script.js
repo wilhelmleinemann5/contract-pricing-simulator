@@ -119,6 +119,7 @@ class MarketSimulator {
 
         for (let sim = 0; sim < nSimulations; sim++) {
             const path = [initialSpot];
+            const discountedPath = [initialSpot * (1 - volumeDiscount)]; // Apply discount to initial price
             let currentPrice = initialSpot;
 
             for (let week = 1; week < weeks; week++) {
@@ -127,15 +128,17 @@ class MarketSimulator {
                 const randomReturn = this.randomNormal(weeklyDrift, volatility);
                 currentPrice = currentPrice * Math.exp(randomReturn);
                 path.push(currentPrice);
+                
+                // Apply volume discount at each step
+                const discountedPrice = currentPrice * (1 - volumeDiscount);
+                discountedPath.push(discountedPrice);
             }
             
             pricePaths.push(path);
             finalPrices.push(currentPrice);
             
-            // Calculate synthetic contract price: average of all weekly prices
-            const averageSpotPrice = path.reduce((sum, price) => sum + price, 0) / path.length;
-            // Apply volume discount to get synthetic contract price
-            const syntheticContractPrice = averageSpotPrice * (1 - volumeDiscount);
+            // Calculate synthetic contract price: average of all weekly discounted prices
+            const syntheticContractPrice = discountedPath.reduce((sum, price) => sum + price, 0) / discountedPath.length;
             syntheticContractPrices.push(syntheticContractPrice);
         }
 
@@ -448,8 +451,10 @@ class MarketSimulator {
             const contractP5 = this.percentile(contractPrices, 5);
             const contractP95 = this.percentile(contractPrices, 95);
             
-            // Calculate average spot price without discount for comparison
-            const avgSpotPrices = results.syntheticContractPrices.map(price => price / (1 - volumeDiscount));
+            // Calculate average spot price (without discount) for each path, then average across all paths
+            const avgSpotPrices = results.pricePaths.map(path => 
+                path.reduce((sum, price) => sum + price, 0) / path.length
+            );
             const avgSpotMean = avgSpotPrices.reduce((a, b) => a + b, 0) / avgSpotPrices.length;
             
             // Contract pricing statistics
