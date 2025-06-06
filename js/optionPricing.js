@@ -114,6 +114,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Render simulation parameters summary card
+  function renderParamsCard(params) {
+    const card = document.getElementById('optionParamsCard');
+    card.innerHTML = `
+      <div><span class="param-label">Starting Market Price:</span> <span class="param-value">$${params.initialSpot.toLocaleString()}</span></div>
+      <div><span class="param-label">13-Week Market Forecast:</span> <span class="param-value">$${params.forecastedRate.toLocaleString()}</span></div>
+      <div><span class="param-label">Volatility:</span> <span class="param-value">${(params.volatility * 100).toFixed(2)}%</span></div>
+      <div><span class="param-label">Simulations:</span> <span class="param-value">${params.nSimulations.toLocaleString()}</span></div>
+    `;
+  }
+
   // Import from Main Simulator functionality
   document.getElementById('importParams').addEventListener('click', () => {
     let scenarios = [];
@@ -140,10 +151,27 @@ document.addEventListener('DOMContentLoaded', () => {
       nSimulations: parseInt(latest.simulations),
     };
     alert(`Imported parameters from scenario: ${latest.name}`);
+    renderParamsCard(importedParams);
   });
 
   // Use importedParams if available, otherwise defaults
   let importedParams = null;
+
+  function getSimulationParams() {
+    if (importedParams) {
+      return { ...importedParams };
+    }
+    return {
+      initialSpot: 3000,
+      forecastedRate: 3200,
+      volatility: 0.03,
+      weeks: 13,
+      nSimulations: 10000
+    };
+  }
+
+  // Initial render
+  renderParamsCard(getSimulationParams());
 
   // Calculate button event
   document.getElementById('calculateOption').addEventListener('click', () => {
@@ -176,19 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // const volatility = 0.03; // 3% weekly
     // const weeks = 13;
     // const nSimulations = 10000;
-
-    function getSimulationParams() {
-      if (importedParams) {
-        return { ...importedParams };
-      }
-      return {
-        initialSpot: 3000,
-        forecastedRate: 3200,
-        volatility: 0.03,
-        weeks: 13,
-        nSimulations: 10000
-      };
-    }
 
     const { initialSpot, forecastedRate, volatility, weeks, nSimulations } = getSimulationParams();
 
@@ -234,6 +249,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Store last results for export
     lastPayoffResults = { payoffs, stats: { mean: meanPayoff, median: medianPayoff, p5, p95 }, params: { week, strike, type } };
+
+    // After using getSimulationParams(), update the card in case defaults changed
+    renderParamsCard(getSimulationParams());
   });
 
   // Export CSV functionality

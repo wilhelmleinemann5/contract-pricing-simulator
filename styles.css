@@ -672,8 +672,74 @@ header p {
   }
 }
 
+.main-nav {
+  display: flex;
+  gap: 24px;
+  background: var(--maersk-light-2);
+  padding: 0 40px;
+  height: 56px;
+  align-items: center;
+  border-bottom: 2px solid var(--maersk-light-2);
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+.main-nav a {
+  color: var(--maersk-dark-2);
+  text-decoration: none;
+  padding: 8px 0 6px 0;
+  border: none;
+  background: none;
+  transition: color 0.2s, border-bottom 0.2s;
+  position: relative;
+  font-weight: 600;
+}
+.main-nav a:hover, .main-nav a:focus {
+  color: var(--maersk-accent-1);
+}
 .main-nav .active {
   color: var(--maersk-accent-2);
+  border-bottom: 4px solid var(--maersk-accent-2);
+  background: none;
   font-weight: 700;
-  border-bottom: 2px solid var(--maersk-accent-2);
+  z-index: 1;
+}
+@media (max-width: 700px) {
+  .main-nav {
+    padding: 0 10px;
+    font-size: 1rem;
+    gap: 12px;
+    height: 44px;
+  }
+}
+
+.option-params-card {
+  background: var(--maersk-light-2);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(68, 84, 106, 0.06);
+  padding: 18px 24px 10px 24px;
+  margin-bottom: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px 40px;
+  align-items: flex-start;
+  font-size: 1.05rem;
+}
+.option-params-card .param-label {
+  color: var(--maersk-dark-2);
+  font-weight: 500;
+  margin-right: 6px;
+}
+.option-params-card .param-value {
+  color: var(--maersk-dark-1);
+  font-weight: 600;
+  margin-right: 18px;
+}
+@media (max-width: 700px) {
+  .option-params-card {
+    flex-direction: column;
+    gap: 8px 0;
+    padding: 10px 8px 6px 8px;
+    font-size: 0.98rem;
+  }
 } 
