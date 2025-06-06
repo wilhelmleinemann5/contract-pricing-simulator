@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Pricing Simulator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Contract Pricing Simulator</h1>
+            <p>Monte Carlo simulation for spot price evolution vs contract rates</p>
+        </header>
+
+        <div class="main-content">
+            <div class="input-panel">
+                <h2>Simulation Parameters</h2>
+                
+                <div class="input-group">
+                    <label for="initialSpot">Starting Market Price ($)</label>
+                    <input type="number" id="initialSpot" value="3000" min="0" step="50">
+                </div>
+
+                <div class="input-group">
+                    <label for="contractRate">Contract Rate ($)</label>
+                    <input type="number" id="contractRate" value="3000" min="0" step="50">
+                </div>
+
+                <div class="input-group">
+                    <label for="volatility">Weekly Volatility (%)</label>
+                    <input type="number" id="volatility" value="3" min="0.1" max="20" step="0.1">
+                </div>
+
+                <div class="input-group">
+                    <label for="weeks">Contract Duration (weeks)</label>
+                    <input type="number" id="weeks" value="13" min="1" max="52" step="1">
+                </div>
+
+                <div class="input-group">
+                    <label for="simulations">Number of Simulations</label>
+                    <select id="simulations">
+                        <option value="1000">1,000</option>
+                        <option value="5000">5,000</option>
+                        <option value="10000" selected>10,000</option>
+                        <option value="50000">50,000</option>
+                    </select>
+                </div>
+
+                <button id="runSimulation" class="run-btn">Run Simulation</button>
+            </div>
+
+            <div class="results-panel">
+                <div class="chart-container">
+                    <canvas id="priceChart"></canvas>
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <h3>Final Price Statistics</h3>
+                        <div id="priceStats" class="stats-grid">
+                            <!-- Stats will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <h3>Risk Metrics</h3>
+                        <div id="riskMetrics" class="stats-grid">
+                            <!-- Risk metrics will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
