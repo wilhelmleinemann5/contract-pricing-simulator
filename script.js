@@ -93,11 +93,11 @@ class MarketSimulator {
             throw new Error('Volume discount must be less than 100%.');
         }
 
-        // Calculate drift parameter: ln(forecasted_rate/starting_rate) / weeks
+        // Calculate drift parameter: ln(forecasted_rate/starting_rate) / 13 weeks (always 13-week forecast)
         const totalDrift = Math.log(forecastedRate / initialSpot);
-        const weeklyDrift = totalDrift / weeks;
+        const weeklyDrift = totalDrift / 13; // Always based on 13-week forecast horizon
 
-        console.log('Drift calculation:', { totalDrift, weeklyDrift });
+        console.log('Drift calculation:', { totalDrift, weeklyDrift, forecastHorizon: '13 weeks', contractDuration: weeks });
 
         // Run Monte Carlo simulation
         const results = this.monteCarloSimulation(initialSpot, forecastedRate, volatility, weeklyDrift, weeks, nSimulations, volumeDiscount);
@@ -314,7 +314,7 @@ class MarketSimulator {
                     plugins: {
                         title: {
                             display: true,
-                            text: 'Simulated Spot Price Evolution vs Forecasted Rate',
+                            text: 'Simulated Spot Price Evolution (13-Week Market Forecast)',
                             font: {
                                 size: 18,
                                 weight: 'bold'
