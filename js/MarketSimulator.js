@@ -1,6 +1,7 @@
 export default class MarketSimulator {
     constructor() {
         this.chart = null;
+        this.costDistributionChart = null;
         
         // Initialize storage with fallback
         console.log('Initializing MarketSimulator...');
@@ -153,6 +154,7 @@ export default class MarketSimulator {
         // Update chart and statistics
         this.updateChart(results);
         this.updateStatistics(results, initialSpot, forecastedRate);
+        this.updateCostDistributionChart(results);
         this.updateContractStatistics(results, volumeDiscount);
         this.updateSuggestedRates(initialSpot, forecastedRate, volatility, weeklyDrift, nSimulations, volumeDiscount);
         this.updateComparisonTable();
@@ -1004,5 +1006,190 @@ export default class MarketSimulator {
             debugCount.textContent = this.savedScenarios.length;
         }
         console.log('Debug info updated:', this.savedScenarios.length, 'scenarios');
+    }
+
+    updateCostDistributionChart(results) {
+        try {
+            console.log('Updating cost distribution chart...');
+            
+            if (!this.totalCostData) {
+                console.error('Total cost data not available for distribution chart');
+                return;
+            }
+            
+            const ctx = document.getElementById('costDistributionChart').getContext('2d');
+            
+            if (!ctx) {
+                throw new Error('Cost distribution chart canvas not found');
+            }
+            
+            if (this.costDistributionChart) {
+                this.costDistributionChart.destroy();
+            }
+
+            const { totalContractCost } = this.totalCostData;
+            
+            // Calculate cost differences for each simulation (contract - spot)
+            const totalSpotCosts = results.pricePaths.map(path => 
+                path.reduce((sum, price) => sum + price, 0)
+            );
+            
+            const costDifferences = totalSpotCosts.map(spotCost => totalContractCost - spotCost);
+            
+            // Create histogram bins
+            const minDiff = Math.min(...costDifferences);
+            const maxDiff = Math.max(...costDifferences);
+            const nBins = 30;
+            const binWidth = (maxDiff - minDiff) / nBins;
+            const bins = Array(nBins).fill(0);
+            const binLabels = [];
+            
+            // Populate bins
+            costDifferences.forEach(diff => {
+                let binIndex = Math.floor((diff - minDiff) / binWidth);
+                if (binIndex >= nBins) binIndex = nBins - 1;
+                if (binIndex < 0) binIndex = 0;
+                bins[binIndex]++;
+            });
+            
+            // Create bin labels (center of each bin)
+            for (let i = 0; i < nBins; i++) {
+                const binCenter = minDiff + (i + 0.5) * binWidth;
+                binLabels.push(binCenter.toFixed(0));
+            }
+            
+            // Calculate key statistics
+            const savingsCount = costDifferences.filter(diff => diff > 0).length;
+            const lossCount = costDifferences.filter(diff => diff < 0).length;
+            const probSavings = (savingsCount / costDifferences.length) * 100;
+            const avgDiff = costDifferences.reduce((a, b) => a + b, 0) / costDifferences.length;
+            
+            // Color bins based on savings (green) vs losses (red)
+            const binColors = binLabels.map(label => {
+                const value = parseFloat(label);
+                if (value > 0) {
+                    return 'rgba(112, 173, 71, 0.8)'; // Green for savings (contract cheaper)
+                } else if (value < 0) {
+                    return 'rgba(237, 125, 49, 0.8)'; // Orange for losses (contract more expensive)
+                } else {
+                    return 'rgba(165, 165, 165, 0.8)'; // Gray for neutral
+                }
+            });
+
+            this.costDistributionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: binLabels,
+                    datasets: [{
+                        label: 'Frequency',
+                        data: bins,
+                        backgroundColor: binColors,
+                        borderColor: binColors.map(color => color.replace('0.8', '1')),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 20,
+                            bottom: 20,
+                            left: 10,
+                            right: 10
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Contract Savings vs Spot ($) - Positive = Contract Cheaper',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                display: true,
+                                color: 'rgba(0,0,0,0.05)'
+                            },
+                            ticks: {
+                                maxTicksLimit: 10,
+                                callback: function(value, index) {
+                                    const label = this.getLabelForValue(value);
+                                    return '$' + parseFloat(label).toFixed(0);
+                                }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Number of Simulations',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                display: true,
+                                color: 'rgba(0,0,0,0.05)'
+                            },
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `Contract vs Spot Cost Distribution (${probSavings.toFixed(1)}% scenarios favor contract)`,
+                            font: {
+                                size: 18,
+                                weight: 'bold'
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 20
+                            }
+                        },
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    const value = parseFloat(context[0].label);
+                                    if (value > 0) {
+                                        return `Contract saves $${Math.abs(value).toFixed(0)}`;
+                                    } else if (value < 0) {
+                                        return `Contract costs $${Math.abs(value).toFixed(0)} more`;
+                                    } else {
+                                        return 'Break-even';
+                                    }
+                                },
+                                label: function(context) {
+                                    const freq = context.parsed.y;
+                                    const percent = (freq / costDifferences.length * 100).toFixed(1);
+                                    return `${freq} simulations (${percent}%)`;
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+            
+            console.log('Cost distribution chart updated successfully', {
+                probSavings: probSavings.toFixed(1) + '%',
+                avgDiff: '$' + avgDiff.toFixed(0),
+                savingsCount,
+                lossCount,
+                totalSimulations: costDifferences.length
+            });
+        } catch (error) {
+            console.error('Error updating cost distribution chart:', error);
+            // Don't throw to prevent breaking the entire simulation
+        }
     }
 }
