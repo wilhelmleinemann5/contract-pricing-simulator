@@ -181,45 +181,77 @@ document.addEventListener('DOMContentLoaded', () => {
   let timeSeriesChart = null;
 
   function calculateOptionTimeSeries(params) {
-    const { initialSpot, forecastedRate, volatility, weeks, nSimulations } = params;
-    
-    // Calculate drift
-    const totalDrift = Math.log(forecastedRate / initialSpot);
-    const weeklyDrift = totalDrift / 13;
+    console.log('Starting calculateOptionTimeSeries with params:', params);
+    try {
+      const { initialSpot, forecastedRate, volatility, weeks, nSimulations } = params;
+      
+      // Calculate drift
+      const totalDrift = Math.log(forecastedRate / initialSpot);
+      const weeklyDrift = totalDrift / 13;
+      console.log('Drift calculated:', { totalDrift, weeklyDrift });
 
-    // Run simulation for full 13 weeks
-    const pricePaths = monteCarloSimulation(initialSpot, forecastedRate, volatility, weeklyDrift, 13, Math.min(nSimulations, 15000));
-    
-    const timeSeriesData = [];
-    
-    // Calculate for each week 1-13
-    for (let week = 1; week <= 13; week++) {
-      const weekIdx = week - 1;
+      // Run simulation for full 13 weeks
+      console.log('Running Monte Carlo simulation...');
+      const pricePaths = monteCarloSimulation(initialSpot, forecastedRate, volatility, weeklyDrift, 13, Math.min(nSimulations, 15000));
+      console.log('Monte Carlo simulation completed. Price paths:', pricePaths.length);
       
-      // Get prices for this week across all simulations
-      const weekPrices = pricePaths.map(path => path[weekIdx]);
+      if (!pricePaths || pricePaths.length === 0) {
+        throw new Error('Monte Carlo simulation returned no price paths');
+      }
       
-      // Calculate mean spot price for this week (ATM strike)
-      const meanSpotPrice = weekPrices.reduce((a, b) => a + b, 0) / weekPrices.length;
-      const strike = meanSpotPrice;
+      const timeSeriesData = [];
       
-      // Calculate call option payoffs for this week with ATM strike
-      const callPayoffs = weekPrices.map(price => Math.max(0, price - strike));
-      const meanCallValue = callPayoffs.reduce((a, b) => a + b, 0) / callPayoffs.length;
+      // Calculate for each week 1-13
+      for (let week = 1; week <= 13; week++) {
+        const weekIdx = week - 1;
+        
+        // Get prices for this week across all simulations
+        const weekPrices = pricePaths.map(path => {
+          if (!path || path.length <= weekIdx) {
+            console.warn(`Path missing data for week ${week}:`, path);
+            return initialSpot; // fallback
+          }
+          return path[weekIdx];
+        });
+        
+        if (weekPrices.length === 0) {
+          throw new Error(`No price data for week ${week}`);
+        }
+        
+        // Calculate mean spot price for this week (ATM strike)
+        const meanSpotPrice = weekPrices.reduce((a, b) => a + b, 0) / weekPrices.length;
+        const strike = meanSpotPrice;
+        
+        // Calculate call option payoffs for this week with ATM strike
+        const callPayoffs = weekPrices.map(price => Math.max(0, price - strike));
+        const meanCallValue = callPayoffs.reduce((a, b) => a + b, 0) / callPayoffs.length;
+        
+        // Calculate as percentage of initial spot
+        const callValuePercent = (meanCallValue / initialSpot) * 100;
+        
+        timeSeriesData.push({
+          week,
+          meanSpotPrice: meanSpotPrice,
+          strike: strike,
+          callValue: meanCallValue,
+          callValuePercent: callValuePercent
+        });
+        
+        if (week <= 3) {
+          console.log(`Week ${week} calculated:`, {
+            meanSpotPrice: meanSpotPrice.toFixed(2),
+            callValue: meanCallValue.toFixed(2),
+            callValuePercent: callValuePercent.toFixed(2)
+          });
+        }
+      }
       
-      // Calculate as percentage of initial spot
-      const callValuePercent = (meanCallValue / initialSpot) * 100;
-      
-      timeSeriesData.push({
-        week,
-        meanSpotPrice,
-        strike,
-        callValue: meanCallValue,
-        callValuePercent
-      });
+      console.log('Time series calculation completed successfully');
+      return timeSeriesData;
+    } catch (error) {
+      console.error('Error in calculateOptionTimeSeries:', error);
+      throw error;
     }
-    
-    return timeSeriesData;
   }
 
   function renderTimeSeriesChart(data) {
@@ -346,11 +378,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateOptionTimeSeries() {
     console.log('Updating option time series...');
-    const params = getSimulationParams();
-    const timeSeriesData = calculateOptionTimeSeries(params);
-    renderTimeSeriesChart(timeSeriesData);
-    renderTimeSeriesTable(timeSeriesData);
-    console.log('Option time series updated');
+    try {
+      const params = getSimulationParams();
+      console.log('Time series params:', params);
+      
+      const timeSeriesData = calculateOptionTimeSeries(params);
+      console.log('Time series data calculated:', timeSeriesData.length, 'weeks');
+      
+      renderTimeSeriesChart(timeSeriesData);
+      renderTimeSeriesTable(timeSeriesData);
+      console.log('Option time series updated successfully');
+    } catch (error) {
+      console.error('Error updating option time series:', error);
+      
+      // Show error in table
+      const tableBody = document.getElementById('optionTimeSeriesTableBody');
+      if (tableBody) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 20px; color: #ED7D31; font-weight: bold;">
+              Error calculating option values: ${error.message}
+            </td>
+          </tr>
+        `;
+      }
+      
+      // Show error in chart area
+      const chartCanvas = document.getElementById('optionTimeSeriesChart');
+      if (chartCanvas) {
+        chartCanvas.style.display = 'none';
+        const chartContainer = chartCanvas.parentElement;
+        if (chartContainer) {
+          chartContainer.innerHTML = `
+            <div class="histogram-error">
+              Error rendering time series chart: ${error.message}
+            </div>
+          `;
+        }
+      }
+    }
   }
 
   // Initial render
