@@ -35,12 +35,12 @@
         <!-- Inputs -->
         <div class="option-inputs">
           <label for="optionWeek">Week
-            <span class="info-icon" tabindex="0" aria-label="Select week" data-tooltip="Choose which week of the simulation to evaluate the option payoff.">ℹ️</span>
+            <span class="info-icon" tabindex="0" aria-label="Select week" data-tooltip="Choose when to evaluate the option. Earlier weeks have less uncertainty but lower potential payoffs. Later weeks are more volatile but offer higher potential returns.">ℹ️</span>
           </label>
           <select id="optionWeek"></select>
 
           <label for="optionStrike">Strike
-            <span class="info-icon" tabindex="0" aria-label="Strike info" data-tooltip="Set the strike as an absolute value or a percentage of the initial market rate.">ℹ️</span>
+            <span class="info-icon" tabindex="0" aria-label="Strike info" data-tooltip="The 'break-even' price for your option. At-the-money (100%) options are most sensitive to market moves. Out-of-the-money options (110%+) are cheaper but need bigger moves to pay off.">ℹ️</span>
           </label>
           <input type="number" id="optionStrike" placeholder="e.g. 3500" min="0">
           <select id="strikeMode">
@@ -49,7 +49,7 @@
           </select>
 
           <label for="optionType">Type
-            <span class="info-icon" tabindex="0" aria-label="Call/Put info" data-tooltip="Call: Pays if simulated rate > strike. Put: Pays if simulated rate < strike.">ℹ️</span>
+            <span class="info-icon" tabindex="0" aria-label="Call/Put info" data-tooltip="Call options profit when prices rise above strike (bet on higher rates). Put options profit when prices fall below strike (insurance against rate drops). Choose based on your market view.">ℹ️</span>
           </label>
           <select id="optionType">
             <option value="call">Call</option>
@@ -71,7 +71,7 @@
       
       <!-- Option Value Over Time Section -->
       <section class="option-time-series">
-        <h2>Option Value Over Time <span class="info-icon" tabindex="0" aria-label="Time series info" data-tooltip="Shows call option values for each week using at-the-money strikes (strike = mean simulated spot price for that week).">ℹ️</span></h2>
+        <h2>Option Value Over Time <span class="info-icon" tabindex="0" aria-label="Time series info" data-tooltip="Shows how option values evolve week by week using at-the-money strikes. Early weeks show premium decay, later weeks show volatility impact. Use this to optimize contract timing.">ℹ️</span></h2>
         <div class="time-series-chart">
           <canvas id="optionTimeSeriesChart" width="800" height="400"></canvas>
         </div>

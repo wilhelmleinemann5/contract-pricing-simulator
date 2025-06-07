@@ -40,26 +40,43 @@
             <div class="input-panel">
                 <h2>Simulation Parameters</h2>
                 
+                <!-- Example Scenarios -->
+                <div class="input-group">
+                    <label for="exampleScenarios">Quick Start Examples</label>
+                    <select id="exampleScenarios">
+                        <option value="">-- Load Example Scenario --</option>
+                        <option value="conservative">📋 Conservative Asia-Europe</option>
+                        <option value="volatile">🚀 Volatile Market Conditions</option>
+                        <option value="balanced">⚖️ Balanced Portfolio</option>
+                        <option value="bullish">📈 Bull Market Scenario</option>
+                        <option value="bearish">📉 Bear Market Scenario</option>
+                    </select>
+                </div>
+
                 <div class="input-group">
                     <label for="initialSpot">Starting Market Price ($)</label>
-                    <input type="number" id="initialSpot" value="3000" min="0" step="50">
+                    <input type="number" id="initialSpot" value="3000" min="0" step="50" 
+                           data-tooltip="Current spot rate for your route. This is your baseline - all forecasts and comparisons are relative to this starting point. Use recent market rates for accuracy.">
                 </div>
 
                 <div class="input-group">
                     <label for="forecastedRate">13-Week Market Forecast ($)</label>
-                    <input type="number" id="forecastedRate" value="3200" min="0" step="50">
-                    <small style="color: #6c757d; font-size: 0.8rem;">Expected market rate 13 weeks from now</small>
+                    <input type="number" id="forecastedRate" value="3200" min="0" step="50"
+                           data-tooltip="Where you expect the market to be in 13 weeks. Higher forecasts favor longer contracts. This drives the 'drift' in price evolution and affects contract premiums significantly.">
+                    <span class="input-helper">Expected market rate 13 weeks from now</span>
                 </div>
 
                 <div class="input-group">
                     <label for="volumeDiscount">Volume Discount (%)</label>
-                    <input type="number" id="volumeDiscount" value="5" min="0" max="50" step="0.5">
+                    <input type="number" id="volumeDiscount" value="5" min="0" max="30" step="0.5"
+                           data-tooltip="Discount for contract volume vs spot rates (typically 2-8%). This reflects economies of scale and relationship pricing. Higher discounts make contracts more attractive vs spot market.">
                     <small style="color: #6c757d; font-size: 0.8rem;">Discount applied to synthetic contract price</small>
                 </div>
 
                 <div class="input-group">
                     <label for="volatility">Weekly Volatility (%)</label>
-                    <input type="number" id="volatility" value="3" min="0.1" max="20" step="0.1">
+                    <input type="number" id="volatility" value="3" min="0" max="20" step="0.1"
+                           data-tooltip="Market uncertainty per week (1-2% = stable, 3-5% = normal, 6%+ = volatile). Higher volatility increases option values but makes contract pricing more difficult. Use historical data or current market conditions.">
                 </div>
 
                 <div class="input-group">
