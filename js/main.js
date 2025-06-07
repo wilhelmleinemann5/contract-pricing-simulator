@@ -7,8 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function addSmartHelp(inputId, helpId, checkFunction) {
     const input = document.getElementById(inputId);
     const helpContainer = document.getElementById(helpId) || createHelpContainer(inputId);
+    let debounceTimer = null;
     
-    input.addEventListener('input', () => {
+    function updateHelp() {
       const value = parseFloat(input.value);
       const helpText = checkFunction(value);
       
@@ -18,7 +19,21 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         helpContainer.style.display = 'none';
       }
-    });
+    }
+    
+    function debouncedUpdate() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(updateHelp, 400);
+    }
+    
+    // Use blur for immediate feedback when leaving field
+    input.addEventListener('blur', updateHelp);
+    
+    // Use debounced input for real-time feedback with delay
+    input.addEventListener('input', debouncedUpdate);
+    
+    // Return the update function so it can be called manually
+    return updateHelp;
   }
   
   function createHelpContainer(inputId) {
@@ -31,17 +46,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   // Smart help for volatility
-  addSmartHelp('volatility', 'volatility-help', (value) => {
+  const triggerVolatilityHelp = addSmartHelp('volatility', 'volatility-help', (value) => {
     if (value <= 1) return '💡 Very low volatility - suitable for stable, predictable markets';
-    if (value <= 2) return '✅ Low volatility - good for conservative pricing strategies';
-    if (value <= 5) return '⚖️ Normal volatility - typical market conditions';
-    if (value <= 8) return '⚠️ High volatility - increases option values significantly';
-    if (value > 8) return '🔥 Very high volatility - extreme market uncertainty, use with caution';
+    if (value <= 3) return '✅ Low volatility - good for conservative pricing strategies';
+    if (value <= 6) return '⚖️ Normal volatility - typical market conditions';
+    if (value <= 9) return '⚠️ High volatility - increases option values significantly';
+    if (value > 9) return '🔥 Very high volatility - extreme market uncertainty, use with caution';
     return null;
   });
   
   // Smart help for volume discount
-  addSmartHelp('volumeDiscount', 'volumeDiscount-help', (value) => {
+  const triggerVolumeDiscountHelp = addSmartHelp('volumeDiscount', 'volumeDiscount-help', (value) => {
     if (value < 2) return '💡 Low discount - suitable for spot market comparison';
     if (value <= 5) return '✅ Typical discount - standard industry range';
     if (value <= 10) return '⚖️ Good discount - attractive for customers';
@@ -52,6 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Smart help for forecast vs current
   const initialSpotInput = document.getElementById('initialSpot');
   const forecastInput = document.getElementById('forecastedRate');
+  
+  let forecastDebounceTimer = null;
   
   function checkForecastGuidance() {
     const initial = parseFloat(initialSpotInput.value) || 0;
@@ -77,63 +94,75 @@ document.addEventListener('DOMContentLoaded', () => {
       if (helpText) {
         helpContainer.innerHTML = `<div class="smart-help">${helpText}</div>`;
         helpContainer.style.display = 'block';
+      } else {
+        helpContainer.style.display = 'none';
       }
     }
   }
   
-  initialSpotInput.addEventListener('input', checkForecastGuidance);
-  forecastInput.addEventListener('input', checkForecastGuidance);
+  function debouncedForecastGuidance() {
+    clearTimeout(forecastDebounceTimer);
+    forecastDebounceTimer = setTimeout(checkForecastGuidance, 500);
+  }
+  
+  // Use blur events (when leaving field) for immediate feedback
+  initialSpotInput.addEventListener('blur', checkForecastGuidance);
+  forecastInput.addEventListener('blur', checkForecastGuidance);
+  
+  // Use debounced input events as backup for real-time feedback (with delay)
+  initialSpotInput.addEventListener('input', debouncedForecastGuidance);
+  forecastInput.addEventListener('input', debouncedForecastGuidance);
   
   // Example scenarios functionality
   const exampleScenarios = {
     conservative: {
-      name: "Conservative Asia-Europe",
+      name: "Stable Market",
       initialSpot: 2800,
-      forecastedRate: 2900,
-      volatility: 2.0,
-      weeks: 13,
-      simulations: 10000,
-      volumeDiscount: 4.0,
-      description: "Stable market with low volatility and modest growth expectations"
-    },
-    volatile: {
-      name: "Volatile Market Conditions", 
-      initialSpot: 3200,
-      forecastedRate: 3400,
-      volatility: 7.5,
-      weeks: 13,
-      simulations: 15000,
-      volumeDiscount: 6.0,
-      description: "High uncertainty market with significant price swings"
-    },
-    balanced: {
-      name: "Balanced Portfolio",
-      initialSpot: 3000,
-      forecastedRate: 3200,
-      volatility: 4.0,
+      forecastedRate: 2800,
+      volatility: 3.0,
       weeks: 13,
       simulations: 10000,
       volumeDiscount: 5.0,
-      description: "Moderate parameters suitable for diversified approach"
+      description: "Stable market with low volatility"
+    },
+    volatile: {
+      name: "Uncertain Future Outlook Market Conditions", 
+      initialSpot: 3200,
+      forecastedRate: 3300,
+      volatility: 10.0,
+      weeks: 13,
+      simulations: 10000,
+      volumeDiscount: 5.0,
+      description: "High uncertainty market with significant price swings"
+    },
+    balanced: {
+      name: "Moderate Positive Outlook",
+      initialSpot: 3000,
+      forecastedRate: 3200,
+      volatility: 5.0,
+      weeks: 13,
+      simulations: 10000,
+      volumeDiscount: 5.0,
+      description: "Moderate parameters"
     },
     bullish: {
       name: "Bull Market Scenario",
       initialSpot: 2900,
-      forecastedRate: 3350,
-      volatility: 3.5,
+      forecastedRate: 3500,
+      volatility: 8.0,
       weeks: 13,
       simulations: 10000,
-      volumeDiscount: 5.5,
+      volumeDiscount: 2.0,
       description: "Strong upward trend with controlled volatility"
     },
     bearish: {
       name: "Bear Market Scenario", 
       initialSpot: 3400,
-      forecastedRate: 3100,
-      volatility: 6.0,
+      forecastedRate: 2700,
+      volatility: 8.0,
       weeks: 13,
-      simulations: 12000,
-      volumeDiscount: 4.5,
+      simulations: 10000,
+      volumeDiscount: 10.0,
       description: "Declining market with higher uncertainty"
     }
   };
@@ -156,8 +185,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Trigger smart help updates
     checkForecastGuidance();
-    document.getElementById('volatility').dispatchEvent(new Event('input'));
-    document.getElementById('volumeDiscount').dispatchEvent(new Event('input'));
+    // Trigger help for volatility and volume discount directly
+    triggerVolatilityHelp();
+    triggerVolumeDiscountHelp();
     
     // Show confirmation and auto-run
     const confirmMsg = `Loaded "${scenario.name}"\n${scenario.description}\n\nRun simulation now?`;
@@ -194,3 +224,4 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('- debugScenarios() - shows current scenario data');
   console.log('- simulator - access to main simulator instance');
 });
+
