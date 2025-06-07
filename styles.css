@@ -155,6 +155,11 @@ header p {
     max-height: 460px !important;
 }
 
+/* Specific styling for cost distribution chart */
+#costDistributionChart {
+    min-height: 400px !important;
+}
+
 .stats-container {
     display: grid;
     grid-template-columns: 1fr 1fr;

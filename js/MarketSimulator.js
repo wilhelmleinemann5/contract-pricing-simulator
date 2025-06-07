@@ -1017,13 +1017,22 @@ export default class MarketSimulator {
                 return;
             }
             
-            const ctx = document.getElementById('costDistributionChart').getContext('2d');
-            
-            if (!ctx) {
-                throw new Error('Cost distribution chart canvas not found');
+            const canvas = document.getElementById('costDistributionChart');
+            if (!canvas) {
+                console.error('Cost distribution chart canvas element not found in DOM');
+                return;
             }
             
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                console.error('Could not get 2D context from cost distribution chart canvas');
+                return;
+            }
+            
+            console.log('Canvas element found, proceeding with chart creation...');
+            
             if (this.costDistributionChart) {
+                console.log('Destroying existing cost distribution chart...');
                 this.costDistributionChart.destroy();
             }
 
@@ -1187,6 +1196,8 @@ export default class MarketSimulator {
                 lossCount,
                 totalSimulations: costDifferences.length
             });
+            
+            console.log('✅ Cost distribution chart created and rendered successfully');
         } catch (error) {
             console.error('Error updating cost distribution chart:', error);
             // Don't throw to prevent breaking the entire simulation
