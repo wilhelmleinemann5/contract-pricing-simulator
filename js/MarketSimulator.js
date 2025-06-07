@@ -428,28 +428,51 @@ export default class MarketSimulator {
                 </div>
             `;
 
-            // Risk metrics
-            const probAbove50pct = (finalPrices.filter(p => p > initialSpot * 1.5).length / finalPrices.length * 100);
-            const probBelow50pct = (finalPrices.filter(p => p < initialSpot * 0.5).length / finalPrices.length * 100);
-            const probAboveForecast = (finalPrices.filter(p => p > forecastedRate).length / finalPrices.length * 100);
-            const probBelowForecast = (finalPrices.filter(p => p < forecastedRate).length / finalPrices.length * 100);
+            // New Business-Focused Risk Metrics
+            const contractWeeks = results.weeks;
+            
+            // Calculate total costs for comparison
+            const contractPrices = results.syntheticContractPrices;
+            const meanContractPrice = contractPrices.reduce((a, b) => a + b, 0) / contractPrices.length;
+            const totalContractCost = meanContractPrice * contractWeeks;
+            
+            // Calculate total spot costs for each simulation
+            const totalSpotCosts = results.pricePaths.map(path => 
+                path.reduce((sum, price) => sum + price, 0)
+            );
+            const meanTotalSpotCost = totalSpotCosts.reduce((a, b) => a + b, 0) / totalSpotCosts.length;
+            const medianTotalSpotCost = this.percentile(totalSpotCosts, 50);
+            
+            // Probability analysis
+            const contractCheaperCount = totalSpotCosts.filter(spotCost => totalContractCost < spotCost).length;
+            const probContractCheaper = (contractCheaperCount / totalSpotCosts.length) * 100;
+            
+            // Average savings (negative means contract costs more)
+            const avgSavings = meanTotalSpotCost - totalContractCost;
+            const savingsPerWeek = avgSavings / contractWeeks;
+            
+            // Threshold probabilities (business-relevant)
+            const threshold1000Above = initialSpot + 1000;
+            const threshold1000Below = initialSpot - 1000;
+            const probAbove1000 = (finalPrices.filter(p => p > threshold1000Above).length / finalPrices.length) * 100;
+            const probBelow1000 = (finalPrices.filter(p => p < threshold1000Below).length / finalPrices.length) * 100;
             
             const riskMetricsHTML = `
                 <div class="stat-item">
-                    <span class="stat-label">Price > Forecast Rate</span>
-                    <span class="stat-value ${probAboveForecast > 50 ? 'positive' : ''}">${probAboveForecast.toFixed(1)}%</span>
+                    <span class="stat-label">95th Percentile (High Case)</span>
+                    <span class="stat-value" title="In the riskiest 5% of simulations, spot ends above this price">$${p95.toFixed(0)}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Price < Forecast Rate</span>
-                    <span class="stat-value ${probBelowForecast > 50 ? 'negative' : ''}">${probBelowForecast.toFixed(1)}%</span>
+                    <span class="stat-label">5th Percentile (Low Case)</span>
+                    <span class="stat-value" title="In the safest 5% of simulations, spot ends below this price">$${p5.toFixed(0)}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Price +50% Higher</span>
-                    <span class="stat-value ${probAbove50pct > 10 ? 'positive' : ''}">${probAbove50pct.toFixed(1)}%</span>
+                    <span class="stat-label">Chance spot > $${threshold1000Above.toLocaleString()}</span>
+                    <span class="stat-value ${probAbove1000 > 25 ? 'positive' : ''}">${probAbove1000.toFixed(1)}%</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Price -50% Lower</span>
-                    <span class="stat-value ${probBelow50pct > 10 ? 'negative' : ''}">${probBelow50pct.toFixed(1)}%</span>
+                    <span class="stat-label">Chance spot < $${threshold1000Below.toLocaleString()}</span>
+                    <span class="stat-value ${probBelow1000 > 25 ? 'negative' : ''}">${probBelow1000.toFixed(1)}%</span>
                 </div>
             `;
 
@@ -463,6 +486,17 @@ export default class MarketSimulator {
             priceStatsEl.innerHTML = priceStatsHTML;
             riskMetricsEl.innerHTML = riskMetricsHTML;
             
+            // Store data for contract statistics update
+            this.totalCostData = {
+                totalContractCost,
+                meanTotalSpotCost,
+                medianTotalSpotCost,
+                probContractCheaper,
+                avgSavings,
+                savingsPerWeek,
+                contractWeeks
+            };
+            
             console.log('Statistics updated successfully');
         } catch (error) {
             console.error('Error updating statistics:', error);
@@ -473,42 +507,55 @@ export default class MarketSimulator {
     updateContractStatistics(results, volumeDiscount) {
         try {
             console.log('Updating contract statistics...');
-            const contractPrices = results.syntheticContractPrices.sort((a, b) => a - b);
-            const contractMean = contractPrices.reduce((a, b) => a + b, 0) / contractPrices.length;
-            const contractP5 = this.percentile(contractPrices, 5);
-            const contractP95 = this.percentile(contractPrices, 95);
             
-            // Calculate average spot price (without discount) for each path, then average across all paths
-            const avgSpotPrices = results.pricePaths.map(path => 
-                path.reduce((sum, price) => sum + price, 0) / path.length
-            );
-            const avgSpotMean = avgSpotPrices.reduce((a, b) => a + b, 0) / avgSpotPrices.length;
+            // Use the total cost data calculated in updateStatistics
+            if (!this.totalCostData) {
+                console.error('Total cost data not available');
+                return;
+            }
             
-            // Contract pricing statistics
+            const {
+                totalContractCost,
+                meanTotalSpotCost,
+                medianTotalSpotCost,
+                probContractCheaper,
+                avgSavings,
+                savingsPerWeek,
+                contractWeeks
+            } = this.totalCostData;
+            
+            // Format savings display
+            const savingsText = avgSavings >= 0 ? 
+                `+$${Math.abs(avgSavings).toFixed(0)}` : 
+                `−$${Math.abs(avgSavings).toFixed(0)}`;
+            const savingsClass = avgSavings >= 0 ? 'positive' : 'negative';
+            const savingsDescription = avgSavings >= 0 ? 'savings' : 'extra cost';
+            
+            // Total Payout Comparison
             const contractStatsHTML = `
                 <div class="stat-item">
-                    <span class="stat-label">Mean Contract Price</span>
-                    <span class="stat-value">$${contractMean.toFixed(0)}</span>
+                    <span class="stat-label">Contract (${contractWeeks}-week total)</span>
+                    <span class="stat-value">$${totalContractCost.toLocaleString()}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">5th Percentile</span>
-                    <span class="stat-value">$${contractP5.toFixed(0)}</span>
+                    <span class="stat-label">Spot (mean total)</span>
+                    <span class="stat-value">$${meanTotalSpotCost.toLocaleString()}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">95th Percentile</span>
-                    <span class="stat-value">$${contractP95.toFixed(0)}</span>
+                    <span class="stat-label">Spot (median total)</span>
+                    <span class="stat-value">$${medianTotalSpotCost.toLocaleString()}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Avg Spot (No Discount)</span>
-                    <span class="stat-value">$${avgSpotMean.toFixed(0)}</span>
+                    <span class="stat-label">Contract cheaper in</span>
+                    <span class="stat-value ${probContractCheaper > 50 ? 'positive' : 'negative'}">${probContractCheaper.toFixed(1)}% of scenarios</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Volume Discount Applied</span>
-                    <span class="stat-value">${(volumeDiscount * 100).toFixed(1)}%</span>
+                    <span class="stat-label">Avg contract ${savingsDescription}</span>
+                    <span class="stat-value ${savingsClass}" title="Negative means contract costs more">${savingsText}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Discount Value</span>
-                    <span class="stat-value positive">$${(avgSpotMean - contractMean).toFixed(0)}</span>
+                    <span class="stat-label">Per week impact</span>
+                    <span class="stat-value ${savingsClass}">$${Math.abs(savingsPerWeek).toFixed(0)}/week</span>
                 </div>
             `;
 
