@@ -63,6 +63,34 @@
           <button type="button" id="exportOptionCSV" class="export-btn">Export CSV</button>
         </div>
       </section>
+      
+      <!-- Option Value Over Time Section -->
+      <section class="option-time-series">
+        <h2>Option Value Over Time <span class="info-icon" tabindex="0" aria-label="Time series info" data-tooltip="Shows call option values for each week using at-the-money strikes (strike = mean simulated spot price for that week).">ℹ️</span></h2>
+        <div class="time-series-chart">
+          <canvas id="optionTimeSeriesChart" width="800" height="400"></canvas>
+        </div>
+        <div class="time-series-table-container">
+          <table id="optionTimeSeriesTable" class="time-series-table">
+            <thead>
+              <tr>
+                <th>Week</th>
+                <th>Mean Spot Price</th>
+                <th>Strike (ATM)</th>
+                <th>Call Value ($)</th>
+                <th>Call Value (%)</th>
+              </tr>
+            </thead>
+            <tbody id="optionTimeSeriesTableBody">
+              <tr>
+                <td colspan="5" style="text-align: center; padding: 20px; font-style: italic; color: #6c757d;">
+                  Calculating option values over time...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </main>
   </div>
   <script src="js/optionPricing.js"></script>

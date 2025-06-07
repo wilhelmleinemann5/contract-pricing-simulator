@@ -177,8 +177,185 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  // Option Value Over Time functionality
+  let timeSeriesChart = null;
+
+  function calculateOptionTimeSeries(params) {
+    const { initialSpot, forecastedRate, volatility, weeks, nSimulations } = params;
+    
+    // Calculate drift
+    const totalDrift = Math.log(forecastedRate / initialSpot);
+    const weeklyDrift = totalDrift / 13;
+
+    // Run simulation for full 13 weeks
+    const pricePaths = monteCarloSimulation(initialSpot, forecastedRate, volatility, weeklyDrift, 13, Math.min(nSimulations, 15000));
+    
+    const timeSeriesData = [];
+    
+    // Calculate for each week 1-13
+    for (let week = 1; week <= 13; week++) {
+      const weekIdx = week - 1;
+      
+      // Get prices for this week across all simulations
+      const weekPrices = pricePaths.map(path => path[weekIdx]);
+      
+      // Calculate mean spot price for this week (ATM strike)
+      const meanSpotPrice = weekPrices.reduce((a, b) => a + b, 0) / weekPrices.length;
+      const strike = meanSpotPrice;
+      
+      // Calculate call option payoffs for this week with ATM strike
+      const callPayoffs = weekPrices.map(price => Math.max(0, price - strike));
+      const meanCallValue = callPayoffs.reduce((a, b) => a + b, 0) / callPayoffs.length;
+      
+      // Calculate as percentage of initial spot
+      const callValuePercent = (meanCallValue / initialSpot) * 100;
+      
+      timeSeriesData.push({
+        week,
+        meanSpotPrice,
+        strike,
+        callValue: meanCallValue,
+        callValuePercent
+      });
+    }
+    
+    return timeSeriesData;
+  }
+
+  function renderTimeSeriesChart(data) {
+    try {
+      const ctx = document.getElementById('optionTimeSeriesChart').getContext('2d');
+      
+      // Destroy previous chart if exists
+      if (timeSeriesChart) {
+        timeSeriesChart.destroy();
+      }
+      
+      const weeks = data.map(d => `Week ${d.week}`);
+      const callValues = data.map(d => d.callValue);
+      const callPercents = data.map(d => d.callValuePercent);
+      
+      timeSeriesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: weeks,
+          datasets: [
+            {
+              label: 'Call Value ($)',
+              data: callValues,
+              borderColor: 'rgba(91, 155, 213, 1)',
+              backgroundColor: 'rgba(91, 155, 213, 0.1)',
+              borderWidth: 3,
+              yAxisID: 'y',
+              tension: 0.3
+            },
+            {
+              label: 'Call Value (%)',
+              data: callPercents,
+              borderColor: 'rgba(237, 125, 49, 1)',
+              backgroundColor: 'rgba(237, 125, 49, 0.1)',
+              borderWidth: 3,
+              yAxisID: 'y1',
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  if (context.datasetIndex === 0) {
+                    return `Call Value: $${context.parsed.y.toFixed(2)}`;
+                  } else {
+                    return `Call Value: ${context.parsed.y.toFixed(2)}%`;
+                  }
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              display: true,
+              title: {
+                display: true,
+                text: 'Week'
+              }
+            },
+            y: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              title: {
+                display: true,
+                text: 'Call Value ($)'
+              },
+              grid: {
+                drawOnChartArea: false,
+              },
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              title: {
+                display: true,
+                text: 'Call Value (% of Initial)'
+              },
+              grid: {
+                drawOnChartArea: false,
+              },
+            },
+          }
+        }
+      });
+    } catch (err) {
+      console.error('Time series chart error:', err);
+      document.getElementById('optionTimeSeriesChart').innerHTML = '<div class="histogram-error">Error rendering time series chart.</div>';
+    }
+  }
+
+  function renderTimeSeriesTable(data) {
+    const tableBody = document.getElementById('optionTimeSeriesTableBody');
+    tableBody.innerHTML = '';
+    
+    data.forEach(row => {
+      const tr = tableBody.insertRow();
+      
+      tr.insertCell().textContent = row.week;
+      tr.insertCell().textContent = `$${row.meanSpotPrice.toFixed(2)}`;
+      tr.insertCell().textContent = `$${row.strike.toFixed(2)}`;
+      
+      const callValueCell = tr.insertCell();
+      callValueCell.textContent = `$${row.callValue.toFixed(2)}`;
+      callValueCell.className = row.callValue > 0 ? 'value-positive' : '';
+      
+      const callPercentCell = tr.insertCell();
+      callPercentCell.textContent = `${row.callValuePercent.toFixed(2)}%`;
+      callPercentCell.className = row.callValuePercent > 0 ? 'value-positive' : '';
+    });
+  }
+
+  function updateOptionTimeSeries() {
+    console.log('Updating option time series...');
+    const params = getSimulationParams();
+    const timeSeriesData = calculateOptionTimeSeries(params);
+    renderTimeSeriesChart(timeSeriesData);
+    renderTimeSeriesTable(timeSeriesData);
+    console.log('Option time series updated');
+  }
+
   // Initial render
   renderParamsCard(getSimulationParams());
+  updateOptionTimeSeries();
 
   // Import from Main Simulator functionality
   document.getElementById('importParams').addEventListener('click', () => {
@@ -207,6 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     alert(`Imported parameters from scenario: ${latest.name}`);
     renderParamsCard(importedParams);
+    updateOptionTimeSeries();
   });
 
   // Store last results for export

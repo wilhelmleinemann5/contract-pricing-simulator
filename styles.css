@@ -783,4 +783,106 @@ header p {
     padding: 10px 8px 6px 8px;
     font-size: 0.98rem;
   }
+}
+
+.option-time-series {
+  background: var(--maersk-light-1);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(68, 84, 106, 0.08);
+  padding: 40px 32px;
+  margin: 32px auto;
+  max-width: 1000px;
+}
+.option-time-series h2 {
+  color: var(--maersk-accent-1);
+  margin-bottom: 28px;
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+.time-series-chart {
+  background: var(--maersk-light-1);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--maersk-light-2);
+  height: 450px;
+  position: relative;
+}
+.time-series-chart canvas {
+  max-height: 410px !important;
+}
+.time-series-table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+  border: 1px solid var(--maersk-light-2);
+  background: var(--maersk-light-1);
+}
+.time-series-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: var(--maersk-dark-2);
+  font-size: 0.95rem;
+}
+.time-series-table th,
+.time-series-table td {
+  padding: 12px 16px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--maersk-light-2);
+}
+.time-series-table th {
+  background-color: var(--maersk-light-2);
+  color: var(--maersk-dark-2);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  position: sticky;
+  top: 0;
+}
+.time-series-table tbody tr:hover {
+  background-color: color-mix(in srgb, var(--maersk-accent-1) 10%, transparent);
+}
+.time-series-table .value-positive {
+  color: var(--maersk-accent-6);
+  font-weight: 600;
+}
+.time-series-table .value-negative {
+  color: var(--maersk-accent-2);
+  font-weight: 600;
+}
+@media (max-width: 1100px) {
+  .option-time-series {
+    max-width: 95%;
+    padding: 20px 16px;
+  }
+  .time-series-chart {
+    height: 350px;
+  }
+  .time-series-chart canvas {
+    max-height: 310px !important;
+  }
+}
+@media (max-width: 700px) {
+  .option-time-series {
+    padding: 16px 8px;
+    margin: 16px auto;
+  }
+  .time-series-chart {
+    height: 280px;
+    padding: 10px;
+  }
+  .time-series-chart canvas {
+    max-height: 260px !important;
+  }
+  .time-series-table {
+    font-size: 0.85rem;
+  }
+  .time-series-table th,
+  .time-series-table td {
+    padding: 8px 10px;
+  }
 } 
