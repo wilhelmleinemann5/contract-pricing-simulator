@@ -1036,4 +1036,16 @@ header p {
     max-width: 280px;
     font-size: 0.85rem;
   }
+}
+
+/* Section descriptions for better UX */
+.section-description {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: var(--bg-light);
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-blue);
 } 

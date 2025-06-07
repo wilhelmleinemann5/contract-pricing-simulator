@@ -170,8 +170,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     return {
       initialSpot: 3000,
-      forecastedRate: 3200,
-      volatility: 0.03,
+      forecastedRate: 3300,
+      volatility: 0.06,
       weeks: 13,
       nSimulations: 10000
     };
@@ -486,9 +486,17 @@ document.addEventListener('DOMContentLoaded', () => {
       nSimulations: parseInt(selectedScenario.simulations),
     };
     
+    // Clear any existing help containers first
+    clearAllSmartHelp();
+    
     alert(`Imported parameters from scenario: ${selectedScenario.name}`);
     renderParamsCard(importedParams);
     updateOptionTimeSeries();
+    
+    // Trigger smart help updates
+    triggerStrikeHelp();
+    updateWeekGuidance();
+    updateOptionTypeGuidance();
   });
 
   // Store last results for export
@@ -499,6 +507,203 @@ document.addEventListener('DOMContentLoaded', () => {
     // ... existing code ...
   }
 
+  // Smart contextual help system
+  function addSmartHelp(inputId, helpId, checkFunction) {
+    const input = document.getElementById(inputId);
+    let debounceTimer = null;
+    
+    function updateHelp() {
+      // Always get fresh reference to help container
+      let helpContainer = document.getElementById(helpId);
+      if (!helpContainer) {
+        helpContainer = createHelpContainer(inputId);
+        if (helpId !== inputId + '-help') {
+          helpContainer.id = helpId; // Override if custom helpId provided
+        }
+      }
+      
+      const value = parseFloat(input.value);
+      const helpText = checkFunction(value, input);
+      
+      if (helpText && !isNaN(value)) {
+        // Clear any existing content
+        helpContainer.innerHTML = '';
+        helpContainer.innerHTML = `<div class="smart-help">${helpText}</div>`;
+        helpContainer.style.display = 'block';
+      } else {
+        // Clear content and hide
+        helpContainer.innerHTML = '';
+        helpContainer.style.display = 'none';
+      }
+    }
+    
+    function debouncedUpdate() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(updateHelp, 400);
+    }
+    
+    // Use blur for immediate feedback when leaving field
+    input.addEventListener('blur', updateHelp);
+    
+    // Use debounced input for real-time feedback with delay
+    input.addEventListener('input', debouncedUpdate);
+    
+    // Return the update function so it can be called manually
+    return updateHelp;
+  }
+  
+  function createHelpContainer(inputId) {
+    // First, remove any existing help container for this input
+    const existingContainer = document.getElementById(inputId + '-help');
+    if (existingContainer) {
+      existingContainer.remove();
+    }
+    
+    const input = document.getElementById(inputId);
+    const container = document.createElement('div');
+    container.id = inputId + '-help';
+    container.style.display = 'none';
+    input.parentNode.appendChild(container);
+    return container;
+  }
+  
+  // Function to clear all smart help containers
+  function clearAllSmartHelp() {
+    const helpContainers = document.querySelectorAll('[id$="-help"], #strike-help');
+    helpContainers.forEach(container => {
+      container.innerHTML = '';
+      container.style.display = 'none';
+    });
+  }
+  
+  // Smart help for strike price
+  const triggerStrikeHelp = addSmartHelp('optionStrike', 'strike-help', (value, input) => {
+    const strikeMode = document.getElementById('strikeMode').value;
+    const initialSpot = getSimulationParams().initialSpot;
+    
+    if (strikeMode === 'percent') {
+      if (value < 90) return '🎯 Deep in-the-money - high premium, very likely to be profitable';
+      if (value < 95) return '💰 In-the-money - higher cost but good profit probability';
+      if (value <= 105) return '⚖️ At-the-money - fair value, most sensitive to market moves';
+      if (value <= 115) return '📈 Out-of-the-money - lower cost, need bigger moves to profit';
+      if (value > 115) return '🚀 Far out-of-the-money - very cheap but requires significant price movement';
+    } else {
+      // Absolute value
+      const percentOfSpot = (value / initialSpot) * 100;
+      if (percentOfSpot < 90) return '🎯 Deep in-the-money - high premium, very likely to be profitable';
+      if (percentOfSpot < 95) return '💰 In-the-money - higher cost but good profit probability';
+      if (percentOfSpot <= 105) return '⚖️ At-the-money - fair value, most sensitive to market moves';
+      if (percentOfSpot <= 115) return '📈 Out-of-the-money - lower cost, need bigger moves to profit';
+      if (percentOfSpot > 115) return '🚀 Far out-of-the-money - very cheap but requires significant price movement';
+    }
+    return null;
+  });
+  
+  // Smart help for week selection based on volatility
+  let weekHelpContainer = null;
+  function updateWeekGuidance() {
+    const week = parseInt(document.getElementById('optionWeek').value);
+    const volatility = getSimulationParams().volatility * 100; // Convert to percentage
+    
+    if (!weekHelpContainer) {
+      weekHelpContainer = createHelpContainer('optionWeek');
+      weekHelpContainer.id = 'week-help';
+    }
+    
+    if (week && !isNaN(week)) {
+      let helpText = '';
+      
+      if (week <= 4) {
+        if (volatility <= 3) {
+          helpText = '🕐 Early week + low volatility - conservative play with limited upside';
+        } else if (volatility >= 8) {
+          helpText = '⚡ Early week + high volatility - good risk/reward balance';
+        } else {
+          helpText = '📅 Early week - lower uncertainty, smaller potential payoffs';
+        }
+      } else if (week <= 9) {
+        if (volatility <= 3) {
+          helpText = '⚖️ Mid-period + low volatility - balanced approach for stable markets';
+        } else if (volatility >= 8) {
+          helpText = '🎯 Mid-period + high volatility - optimal risk/reward sweet spot';
+        } else {
+          helpText = '📊 Mid-period - balanced risk and return potential';
+        }
+      } else {
+        if (volatility <= 3) {
+          helpText = '📈 Late week + low volatility - limited benefit from extended time';
+        } else if (volatility >= 8) {
+          helpText = '🚀 Late week + high volatility - maximum potential but highest risk';
+        } else {
+          helpText = '⏰ Late week - higher potential payoffs but maximum uncertainty';
+        }
+      }
+      
+      if (helpText) {
+        weekHelpContainer.innerHTML = `<div class="smart-help">${helpText}</div>`;
+        weekHelpContainer.style.display = 'block';
+      } else {
+        weekHelpContainer.innerHTML = '';
+        weekHelpContainer.style.display = 'none';
+      }
+    }
+  }
+  
+  // Smart help for option type based on market conditions
+  let optionTypeHelpContainer = null;
+  function updateOptionTypeGuidance() {
+    const optionType = document.getElementById('optionType').value;
+    const params = getSimulationParams();
+    const marketChange = ((params.forecastedRate - params.initialSpot) / params.initialSpot) * 100;
+    
+    if (!optionTypeHelpContainer) {
+      optionTypeHelpContainer = createHelpContainer('optionType');
+      optionTypeHelpContainer.id = 'optiontype-help';
+    }
+    
+    let helpText = '';
+    
+    if (optionType === 'call') {
+      if (marketChange > 5) {
+        helpText = '📈 Call + bullish forecast - aligned with market expectations';
+      } else if (marketChange < -5) {
+        helpText = '⚠️ Call + bearish forecast - contrarian bet, higher risk';
+      } else {
+        helpText = '📊 Call option - profits from rate increases above strike';
+      }
+    } else if (optionType === 'put') {
+      if (marketChange < -5) {
+        helpText = '📉 Put + bearish forecast - aligned with market expectations';
+      } else if (marketChange > 5) {
+        helpText = '🛡️ Put + bullish forecast - insurance against downside risk';
+      } else {
+        helpText = '📊 Put option - profits from rate decreases below strike';
+      }
+    }
+    
+    if (helpText) {
+      optionTypeHelpContainer.innerHTML = `<div class="smart-help">${helpText}</div>`;
+      optionTypeHelpContainer.style.display = 'block';
+    } else {
+      optionTypeHelpContainer.innerHTML = '';
+      optionTypeHelpContainer.style.display = 'none';
+    }
+  }
+  
+  // Add event listeners for smart help
+  document.getElementById('strikeMode').addEventListener('change', () => {
+    triggerStrikeHelp();
+  });
+  
+  document.getElementById('optionWeek').addEventListener('change', updateWeekGuidance);
+  document.getElementById('optionType').addEventListener('change', updateOptionTypeGuidance);
+
+  // Initial smart help setup
+  setTimeout(() => {
+    updateWeekGuidance();
+    updateOptionTypeGuidance();
+  }, 100);
+  
   // Calculate button event
   document.getElementById('calculateOption').addEventListener('click', () => {
     // Get input values
@@ -579,5 +784,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // After using getSimulationParams(), update the card in case defaults changed
     renderParamsCard(getSimulationParams());
+    
+    // Update smart help after calculation
+    triggerStrikeHelp();
+    updateWeekGuidance();
+    updateOptionTypeGuidance();
   });
 }); 
