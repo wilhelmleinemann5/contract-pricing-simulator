@@ -1,6 +1,8 @@
 // Option Pricing UI logic
+console.log('Option Pricing script loaded!');
 
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOMContentLoaded fired!');
   // Populate week selector (default: 1-13)
   const weekSelect = document.getElementById('optionWeek');
   for (let i = 1; i <= 13; i++) {
