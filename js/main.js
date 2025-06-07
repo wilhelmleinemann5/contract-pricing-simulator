@@ -3,20 +3,38 @@ import MarketSimulator from './MarketSimulator.js';
 document.addEventListener('DOMContentLoaded', () => {
   const simulator = new MarketSimulator();
   
+  // Clear any existing help containers on page load
+  setTimeout(() => {
+    const existingHelp = document.querySelectorAll('[id*="help"]');
+    existingHelp.forEach(container => container.remove());
+  }, 100);
+  
   // Smart contextual help system
   function addSmartHelp(inputId, helpId, checkFunction) {
     const input = document.getElementById(inputId);
-    const helpContainer = document.getElementById(helpId) || createHelpContainer(inputId);
     let debounceTimer = null;
     
     function updateHelp() {
+      // Always get fresh reference to help container
+      let helpContainer = document.getElementById(helpId);
+      if (!helpContainer) {
+        helpContainer = createHelpContainer(inputId);
+        if (helpId !== inputId + '-help') {
+          helpContainer.id = helpId; // Override if custom helpId provided
+        }
+      }
+      
       const value = parseFloat(input.value);
       const helpText = checkFunction(value);
       
-      if (helpText) {
+      if (helpText && !isNaN(value)) {
+        // Clear any existing content
+        helpContainer.innerHTML = '';
         helpContainer.innerHTML = `<div class="smart-help">${helpText}</div>`;
         helpContainer.style.display = 'block';
       } else {
+        // Clear content and hide
+        helpContainer.innerHTML = '';
         helpContainer.style.display = 'none';
       }
     }
@@ -37,12 +55,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function createHelpContainer(inputId) {
+    // First, remove any existing help container for this input
+    const existingContainer = document.getElementById(inputId + '-help');
+    if (existingContainer) {
+      existingContainer.remove();
+    }
+    
     const input = document.getElementById(inputId);
     const container = document.createElement('div');
     container.id = inputId + '-help';
     container.style.display = 'none';
     input.parentNode.appendChild(container);
     return container;
+  }
+  
+  // Function to clear all smart help containers
+  function clearAllSmartHelp() {
+    const helpContainers = document.querySelectorAll('[id$="-help"], #forecast-help');
+    helpContainers.forEach(container => {
+      container.innerHTML = '';
+      container.style.display = 'none';
+    });
   }
   
   // Smart help for volatility
@@ -74,9 +107,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const initial = parseFloat(initialSpotInput.value) || 0;
     const forecast = parseFloat(forecastInput.value) || 0;
     
+    // Get or create help container, removing any existing ones first
+    let helpContainer = document.getElementById('forecast-help');
+    if (!helpContainer) {
+      // Remove any existing forecast help containers
+      const existingContainers = document.querySelectorAll('[id*="forecast"][id*="help"]');
+      existingContainers.forEach(container => container.remove());
+      
+      helpContainer = createHelpContainer('forecastedRate');
+      helpContainer.id = 'forecast-help'; // Override the auto-generated ID
+    }
+    
     if (initial > 0 && forecast > 0) {
       const change = ((forecast - initial) / initial) * 100;
-      const helpContainer = document.getElementById('forecast-help') || createHelpContainer('forecastedRate');
       
       let helpText = '';
       if (Math.abs(change) < 2) {
@@ -92,11 +135,18 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       if (helpText) {
+        // Clear any existing content
+        helpContainer.innerHTML = '';
         helpContainer.innerHTML = `<div class="smart-help">${helpText}</div>`;
         helpContainer.style.display = 'block';
       } else {
+        helpContainer.innerHTML = '';
         helpContainer.style.display = 'none';
       }
+    } else {
+      // Clear content and hide when values are invalid
+      helpContainer.innerHTML = '';
+      helpContainer.style.display = 'none';
     }
   }
   
@@ -182,6 +232,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('weeks').value = scenario.weeks;
     document.getElementById('simulations').value = scenario.simulations;
     document.getElementById('volumeDiscount').value = scenario.volumeDiscount;
+    
+    // Clear any existing help containers first
+    clearAllSmartHelp();
     
     // Trigger smart help updates
     checkForecastGuidance();
