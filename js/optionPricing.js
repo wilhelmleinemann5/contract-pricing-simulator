@@ -1,8 +1,6 @@
 // Option Pricing UI logic
-console.log('Option Pricing script loaded!');
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOMContentLoaded fired!');
   // Populate week selector (default: 1-13)
   const weekSelect = document.getElementById('optionWeek');
   for (let i = 1; i <= 13; i++) {
@@ -183,19 +181,15 @@ document.addEventListener('DOMContentLoaded', () => {
   let timeSeriesChart = null;
 
   function calculateOptionTimeSeries(params) {
-    console.log('Starting calculateOptionTimeSeries with params:', params);
     try {
       const { initialSpot, forecastedRate, volatility, weeks, nSimulations } = params;
       
       // Calculate drift
       const totalDrift = Math.log(forecastedRate / initialSpot);
       const weeklyDrift = totalDrift / 13;
-      console.log('Drift calculated:', { totalDrift, weeklyDrift });
 
       // Run simulation for full 13 weeks
-      console.log('Running Monte Carlo simulation...');
       const pricePaths = monteCarloSimulation(initialSpot, forecastedRate, volatility, weeklyDrift, 13, Math.min(nSimulations, 15000));
-      console.log('Monte Carlo simulation completed. Price paths:', pricePaths.length);
       
       if (!pricePaths || pricePaths.length === 0) {
         throw new Error('Monte Carlo simulation returned no price paths');
@@ -210,7 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Get prices for this week across all simulations
         const weekPrices = pricePaths.map(path => {
           if (!path || path.length <= weekIdx) {
-            console.warn(`Path missing data for week ${week}:`, path);
             return initialSpot; // fallback
           }
           return path[weekIdx];
@@ -238,17 +231,8 @@ document.addEventListener('DOMContentLoaded', () => {
           callValue: meanCallValue,
           callValuePercent: callValuePercent
         });
-        
-        if (week <= 3) {
-          console.log(`Week ${week} calculated:`, {
-            meanSpotPrice: meanSpotPrice.toFixed(2),
-            callValue: meanCallValue.toFixed(2),
-            callValuePercent: callValuePercent.toFixed(2)
-          });
-        }
       }
       
-      console.log('Time series calculation completed successfully');
       return timeSeriesData;
     } catch (error) {
       console.error('Error in calculateOptionTimeSeries:', error);
@@ -379,17 +363,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateOptionTimeSeries() {
-    console.log('Updating option time series...');
     try {
       const params = getSimulationParams();
-      console.log('Time series params:', params);
-      
       const timeSeriesData = calculateOptionTimeSeries(params);
-      console.log('Time series data calculated:', timeSeriesData.length, 'weeks');
-      
       renderTimeSeriesChart(timeSeriesData);
       renderTimeSeriesTable(timeSeriesData);
-      console.log('Option time series updated successfully');
     } catch (error) {
       console.error('Error updating option time series:', error);
       
@@ -423,23 +401,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Load and populate saved scenarios dropdown
   function loadSavedScenarios() {
-    console.log('Loading saved scenarios...');
     const scenarioSelect = document.getElementById('savedScenarioSelect');
     const importBtn = document.getElementById('importParams');
     
     try {
       const stored = localStorage.getItem('contractSimulatorScenarios');
-      console.log('Raw localStorage data:', stored);
-      
       const scenarios = stored ? JSON.parse(stored) : [];
-      console.log('Parsed scenarios:', scenarios);
-      console.log('Number of scenarios found:', scenarios.length);
       
       // Clear existing options except the first one
       scenarioSelect.innerHTML = '<option value="">-- Select Scenario to Import --</option>';
       
       if (scenarios.length === 0) {
-        console.log('No scenarios found, showing empty message');
         const option = document.createElement('option');
         option.value = '';
         option.textContent = 'No scenarios found in main simulator';
@@ -451,18 +423,15 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Sort scenarios by timestamp (most recent first)
       scenarios.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      console.log('Sorted scenarios:', scenarios.map(s => s.name));
       
       // Add scenarios to dropdown
       scenarios.forEach((scenario, index) => {
-        console.log(`Adding scenario ${index + 1}:`, scenario.name);
         const option = document.createElement('option');
         option.value = scenario.name;
         option.textContent = `${scenario.name} (${new Date(scenario.timestamp).toLocaleDateString()})`;
         scenarioSelect.appendChild(option);
       });
       
-      console.log(`Successfully loaded ${scenarios.length} scenarios into dropdown`);
       importBtn.disabled = false;
     } catch (error) {
       console.error('Error loading scenarios:', error);
