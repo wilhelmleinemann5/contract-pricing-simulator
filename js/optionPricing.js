@@ -423,17 +423,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Load and populate saved scenarios dropdown
   function loadSavedScenarios() {
+    console.log('Loading saved scenarios...');
     const scenarioSelect = document.getElementById('savedScenarioSelect');
     const importBtn = document.getElementById('importParams');
     
     try {
       const stored = localStorage.getItem('contractSimulatorScenarios');
+      console.log('Raw localStorage data:', stored);
+      
       const scenarios = stored ? JSON.parse(stored) : [];
+      console.log('Parsed scenarios:', scenarios);
+      console.log('Number of scenarios found:', scenarios.length);
       
       // Clear existing options except the first one
       scenarioSelect.innerHTML = '<option value="">-- Select Scenario to Import --</option>';
       
       if (scenarios.length === 0) {
+        console.log('No scenarios found, showing empty message');
         const option = document.createElement('option');
         option.value = '';
         option.textContent = 'No scenarios found in main simulator';
@@ -445,16 +451,19 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Sort scenarios by timestamp (most recent first)
       scenarios.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      console.log('Sorted scenarios:', scenarios.map(s => s.name));
       
       // Add scenarios to dropdown
-      scenarios.forEach(scenario => {
+      scenarios.forEach((scenario, index) => {
+        console.log(`Adding scenario ${index + 1}:`, scenario.name);
         const option = document.createElement('option');
         option.value = scenario.name;
         option.textContent = `${scenario.name} (${new Date(scenario.timestamp).toLocaleDateString()})`;
         scenarioSelect.appendChild(option);
       });
       
-      console.log(`Loaded ${scenarios.length} scenarios into dropdown`);
+      console.log(`Successfully loaded ${scenarios.length} scenarios into dropdown`);
+      importBtn.disabled = false;
     } catch (error) {
       console.error('Error loading scenarios:', error);
       scenarioSelect.innerHTML = '<option value="">Error loading scenarios</option>';
