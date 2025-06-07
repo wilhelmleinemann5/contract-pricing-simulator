@@ -421,12 +421,12 @@ export default class MarketSimulator {
                     <span class="stat-value">$${median.toFixed(0)}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">5th Percentile</span>
-                    <span class="stat-value">$${p5.toFixed(0)}</span>
+                    <span class="stat-label">Price Range</span>
+                    <span class="stat-value">$${(p95 - p5).toFixed(0)}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">95th Percentile</span>
-                    <span class="stat-value">$${p95.toFixed(0)}</span>
+                    <span class="stat-label">Standard Deviation</span>
+                    <span class="stat-value">$${Math.sqrt(finalPrices.reduce((sum, price) => sum + Math.pow(price - mean, 2), 0) / finalPrices.length).toFixed(0)}</span>
                 </div>
             `;
 
@@ -1038,12 +1038,14 @@ export default class MarketSimulator {
 
             const { totalContractCost } = this.totalCostData;
             
-            // Calculate cost differences for each simulation (contract - spot)
+            // Calculate cost differences for each simulation (spot - contract)
+            // Positive values = contract saves money (contract cheaper than spot)
+            // Negative values = contract costs more (spot cheaper than contract)
             const totalSpotCosts = results.pricePaths.map(path => 
                 path.reduce((sum, price) => sum + price, 0)
             );
             
-            const costDifferences = totalSpotCosts.map(spotCost => totalContractCost - spotCost);
+            const costDifferences = totalSpotCosts.map(spotCost => spotCost - totalContractCost);
             
             // Create histogram bins
             const minDiff = Math.min(...costDifferences);
@@ -1067,7 +1069,7 @@ export default class MarketSimulator {
                 binLabels.push(binCenter.toFixed(0));
             }
             
-            // Calculate key statistics
+            // Calculate key statistics - should match Total Cost Comparison
             const savingsCount = costDifferences.filter(diff => diff > 0).length;
             const lossCount = costDifferences.filter(diff => diff < 0).length;
             const probSavings = (savingsCount / costDifferences.length) * 100;
@@ -1112,7 +1114,7 @@ export default class MarketSimulator {
                         x: {
                             title: {
                                 display: true,
-                                text: 'Contract Savings vs Spot ($) - Positive = Contract Cheaper',
+                                text: 'Contract Savings vs Spot ($) - Positive = Contract Saves Money',
                                 font: {
                                     size: 14,
                                     weight: 'bold'
