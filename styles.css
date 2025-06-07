@@ -741,11 +741,6 @@ header p {
   margin-right: 12px;
   font-size: 1.08rem;
 }
-.full-width {
-  width: 100%;
-  margin-bottom: 16px;
-  margin-top: 0;
-}
 .export-btn {
   display: block;
   margin: 18px auto 0 auto;
@@ -884,5 +879,60 @@ header p {
   .time-series-table th,
   .time-series-table td {
     padding: 8px 10px;
+  }
+}
+
+.import-scenario-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  margin-top: 0;
+}
+.scenario-select {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1.5px solid var(--maersk-accent-3);
+  border-radius: 6px;
+  font-size: 1rem;
+  background: var(--maersk-light-2);
+  color: var(--maersk-dark-1);
+  font-weight: 500;
+}
+.scenario-select:focus {
+  outline: none;
+  border-color: var(--maersk-accent-1);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--maersk-accent-1) 10%, transparent);
+}
+.import-btn {
+  background: var(--maersk-accent-5);
+  color: var(--maersk-light-1);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  box-shadow: 0 1px 4px rgba(68,84,106,0.06);
+  white-space: nowrap;
+}
+.import-btn:hover {
+  background: var(--maersk-accent-1);
+  color: var(--maersk-dark-1);
+}
+.import-btn:disabled {
+  background: var(--maersk-accent-3);
+  color: var(--maersk-light-2);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+@media (max-width: 700px) {
+  .import-scenario-controls {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .scenario-select, .import-btn {
+    width: 100%;
   }
 } 

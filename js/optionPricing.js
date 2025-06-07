@@ -421,12 +421,68 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Load and populate saved scenarios dropdown
+  function loadSavedScenarios() {
+    const scenarioSelect = document.getElementById('savedScenarioSelect');
+    const importBtn = document.getElementById('importParams');
+    
+    try {
+      const stored = localStorage.getItem('contractSimulatorScenarios');
+      const scenarios = stored ? JSON.parse(stored) : [];
+      
+      // Clear existing options except the first one
+      scenarioSelect.innerHTML = '<option value="">-- Select Scenario to Import --</option>';
+      
+      if (scenarios.length === 0) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No scenarios found in main simulator';
+        option.disabled = true;
+        scenarioSelect.appendChild(option);
+        importBtn.disabled = true;
+        return;
+      }
+      
+      // Sort scenarios by timestamp (most recent first)
+      scenarios.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      
+      // Add scenarios to dropdown
+      scenarios.forEach(scenario => {
+        const option = document.createElement('option');
+        option.value = scenario.name;
+        option.textContent = `${scenario.name} (${new Date(scenario.timestamp).toLocaleDateString()})`;
+        scenarioSelect.appendChild(option);
+      });
+      
+      console.log(`Loaded ${scenarios.length} scenarios into dropdown`);
+    } catch (error) {
+      console.error('Error loading scenarios:', error);
+      scenarioSelect.innerHTML = '<option value="">Error loading scenarios</option>';
+      importBtn.disabled = true;
+    }
+  }
+
+  // Handle scenario selection change
+  document.getElementById('savedScenarioSelect').addEventListener('change', (e) => {
+    const importBtn = document.getElementById('importParams');
+    importBtn.disabled = !e.target.value;
+  });
+
   // Initial render
   renderParamsCard(getSimulationParams());
   updateOptionTimeSeries();
+  loadSavedScenarios();
 
   // Import from Main Simulator functionality
   document.getElementById('importParams').addEventListener('click', () => {
+    const scenarioSelect = document.getElementById('savedScenarioSelect');
+    const selectedScenarioName = scenarioSelect.value;
+    
+    if (!selectedScenarioName) {
+      alert('Please select a scenario to import.');
+      return;
+    }
+    
     let scenarios = [];
     try {
       const stored = localStorage.getItem('contractSimulatorScenarios');
@@ -435,22 +491,24 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('Could not load scenarios from main simulator.');
       return;
     }
-    if (!scenarios.length) {
-      alert('No scenarios found in main simulator. Please save a scenario first.');
+    
+    // Find the selected scenario
+    const selectedScenario = scenarios.find(s => s.name === selectedScenarioName);
+    if (!selectedScenario) {
+      alert('Selected scenario not found.');
       return;
     }
-    // Use the most recent scenario (by timestamp)
-    scenarios.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    const latest = scenarios[0];
+    
     // Set as defaults for simulation
     importedParams = {
-      initialSpot: parseFloat(latest.initialSpot),
-      forecastedRate: parseFloat(latest.forecastedRate),
-      volatility: parseFloat(latest.volatility) / 100, // convert % to decimal
-      weeks: parseInt(latest.weeks),
-      nSimulations: parseInt(latest.simulations),
+      initialSpot: parseFloat(selectedScenario.initialSpot),
+      forecastedRate: parseFloat(selectedScenario.forecastedRate),
+      volatility: parseFloat(selectedScenario.volatility) / 100, // convert % to decimal
+      weeks: parseInt(selectedScenario.weeks),
+      nSimulations: parseInt(selectedScenario.simulations),
     };
-    alert(`Imported parameters from scenario: ${latest.name}`);
+    
+    alert(`Imported parameters from scenario: ${selectedScenario.name}`);
     renderParamsCard(importedParams);
     updateOptionTimeSeries();
   });
