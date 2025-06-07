@@ -544,16 +544,16 @@ export default class MarketSimulator {
                     <span class="stat-value">$${meanTotalSpotCost.toLocaleString()}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Spot (median total)</span>
-                    <span class="stat-value">$${medianTotalSpotCost.toLocaleString()}</span>
-                </div>
-                <div class="stat-item">
                     <span class="stat-label">Contract cheaper in</span>
                     <span class="stat-value ${probContractCheaper > 50 ? 'positive' : 'negative'}">${probContractCheaper.toFixed(1)}% of scenarios</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Avg contract ${savingsDescription}</span>
                     <span class="stat-value ${savingsClass}" title="Negative means contract costs more">${savingsText}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Average spot rate</span>
+                    <span class="stat-value">$${(meanTotalSpotCost / contractWeeks).toFixed(0)}/week</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Per week impact</span>
