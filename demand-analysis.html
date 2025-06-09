@@ -35,13 +35,15 @@
                 <div class="supply-curve-controls">
                     <h3>Supply Curve Configuration</h3>
                     <div class="supply-inputs">
-                        <label for="supplyCurveType">Supply Model
-                            <span class="info-icon" tabindex="0" aria-label="Supply curve type" data-tooltip="Flat supply assumes unlimited capacity at fixed cost. Sloped supply assumes increasing costs with volume (capacity constraints, overtime, etc.).">ℹ️</span>
-                        </label>
-                        <select id="supplyCurveType">
-                            <option value="flat">Flat (Unlimited Capacity)</option>
-                            <option value="sloped">Sloped (Capacity Constraints)</option>
-                        </select>
+                        <div class="input-group">
+                            <label for="supplyCurveType">Supply Model
+                                <span class="info-icon" tabindex="0" aria-label="Supply curve type" data-tooltip="Flat supply assumes unlimited capacity at fixed cost. Sloped supply assumes increasing costs with volume (capacity constraints, overtime, etc.).">ℹ️</span>
+                            </label>
+                            <select id="supplyCurveType">
+                                <option value="flat">Flat (Unlimited Capacity)</option>
+                                <option value="sloped">Sloped (Capacity Constraints)</option>
+                            </select>
+                        </div>
                         
                         <div class="input-group">
                             <label for="supplyPrice">Base Supply Price ($)
@@ -90,7 +92,7 @@
                             <label for="priceSensitivity">Customer Price Sensitivity (%)
                                 <span class="info-icon" tabindex="0" aria-label="Price sensitivity" data-tooltip="How much volume changes when you change price by 10%. For example: if you raise price 10% and volume drops 15%, enter 15. Higher numbers mean more price-sensitive customers.">ℹ️</span>
                             </label>
-                            <input type="number" id="priceSensitivity" value="15" min="1" max="50" step="1">
+                            <input type="number" id="priceSensitivity" value="10" min="1" max="50" step="1">
                             <span class="input-helper">% volume change for 10% price change</span>
                         </div>
                     </div>

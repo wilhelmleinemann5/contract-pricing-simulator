@@ -863,8 +863,9 @@ class DemandAnalysis {
             summary += `<p>The baseline demand curve was constructed from your current market observation ($${baseline.price}, ${baseline.volume.toFixed(0)} FFE) with estimated customer price sensitivity of ${sensitivity}% (volume change for 10% price change).</p>`;
         }
         
+        let mainShock = null; // Initialize at function scope
         if (shockPoints.length > 0) {
-            const mainShock = shockPoints[0];
+            mainShock = shockPoints[0];
             const expectedVolume = beforeCurve.predict(mainShock.price);
             
             summary += `<p><strong>Shock Analysis:</strong> On May 12, we observed <strong>${mainShock.volume.toFixed(0)} FFE booked</strong> at $${mainShock.price}, compared to the expected ${expectedVolume.toFixed(0)} FFE from your baseline curve. This represents a <strong>${((mainShock.volume / expectedVolume - 1) * 100).toFixed(0)}% ${mainShock.volume > expectedVolume ? 'increase' : 'decrease'}</strong> in demand.</p>`;
@@ -888,11 +889,13 @@ class DemandAnalysis {
         
         // Smart uncertainty assessment based on shock surprise level
         if (afterCurve.shockSurpriseLevel <= 1.1) {
-            summary += `<p><span style="color: var(--maersk-accent-6);">✅ Expected Shock:</span> The observed volume (${mainShock.volume.toFixed(0)} FFE) fell within your original confidence interval at this price. This validates your baseline model and only requires minimal uncertainty adjustment (${((afterCurve.shockSurpriseLevel - 1) * 100).toFixed(0)}% increase).</p>`;
+            const volumeText = mainShock ? mainShock.volume.toFixed(0) : 'observed';
+            summary += `<p><span style="color: var(--maersk-accent-6);">✅ Expected Shock:</span> The observed volume (${volumeText} FFE) fell within your original confidence interval at this price. This validates your baseline model and only requires minimal uncertainty adjustment (${((afterCurve.shockSurpriseLevel - 1) * 100).toFixed(0)}% increase).</p>`;
         } else if (afterCurve.shockSurpriseLevel <= 2.0) {
             summary += `<p><span style="color: var(--maersk-accent-4);">⚠️ Moderate Surprise:</span> The shock observation fell outside your original confidence interval but within reasonable bounds. Uncertainty increased by ${((afterCurve.shockSurpriseLevel - 1) * 100).toFixed(0)}% to reflect this moderate surprise. Consider updating your demand understanding.</p>`;
         } else {
-            summary += `<p><span style="color: var(--maersk-accent-2);">🚨 Major Surprise:</span> The shock observation (${mainShock.volume.toFixed(0)} FFE) was far outside your original confidence interval, indicating a significant market shift. Uncertainty increased by ${((afterCurve.shockSurpriseLevel - 1) * 100).toFixed(0)}% to reflect this major surprise. Investigate underlying market drivers.</p>`;
+            const volumeText = mainShock ? mainShock.volume.toFixed(0) : 'observed';
+            summary += `<p><span style="color: var(--maersk-accent-2);">🚨 Major Surprise:</span> The shock observation (${volumeText} FFE) was far outside your original confidence interval, indicating a significant market shift. Uncertainty increased by ${((afterCurve.shockSurpriseLevel - 1) * 100).toFixed(0)}% to reflect this major surprise. Investigate underlying market drivers.</p>`;
         }
         
         if (afterCurve.shiftRatio > 1.2) {
