@@ -794,11 +794,13 @@ class DemandAnalysis {
         const priceChangePercent = (priceChange / beforeEq.price) * 100;
         const volumeChangePercent = (volumeChange / beforeEq.volume) * 100;
         
+        // Calculate sensitivity at the start so it's available throughout the function
+        const sensitivity = (-beforeCurve.b * 10).toFixed(1); // Convert back to % for 10% price change
+        
         let summary = `<p><strong>Demand Analysis Based on Price Sensitivity & Shock Observation:</strong></p>`;
         
         if (beforeCurve.baselinePoint) {
             const baseline = beforeCurve.baselinePoint;
-            const sensitivity = (-beforeCurve.b * 10).toFixed(1); // Convert back to % for 10% price change
             summary += `<p>The baseline demand curve was constructed from your current market observation ($${baseline.price}, ${baseline.volume.toFixed(0)} FFE) with estimated customer price sensitivity of ${sensitivity}% (volume change for 10% price change).</p>`;
         }
         
