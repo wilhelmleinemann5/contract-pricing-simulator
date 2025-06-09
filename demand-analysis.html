@@ -43,15 +43,26 @@
                             <option value="sloped">Sloped (Capacity Constraints)</option>
                         </select>
                         
-                        <label for="supplyPrice">Base Supply Price ($)
-                            <span class="info-icon" tabindex="0" aria-label="Base supply price" data-tooltip="Your minimum acceptable price or marginal cost. This is where your supply curve starts on the price axis.">ℹ️</span>
-                        </label>
-                        <input type="number" id="supplyPrice" value="2000" min="0" step="50">
+                        <div class="input-group">
+                            <label for="supplyPrice">Base Supply Price ($)
+                                <span class="info-icon" tabindex="0" aria-label="Base supply price" data-tooltip="Your minimum acceptable price or marginal cost. This is where your supply curve starts on the price axis.">ℹ️</span>
+                            </label>
+                            <input type="number" id="supplyPrice" value="2000" min="0" step="50">
+                        </div>
                         
-                        <label for="supplySlope" id="supplySlopeLabel" style="display: none;">Supply Slope ($/unit)
-                            <span class="info-icon" tabindex="0" aria-label="Supply slope" data-tooltip="How much your costs increase per additional unit. Higher slopes mean steeper capacity constraints.">ℹ️</span>
-                        </label>
-                        <input type="number" id="supplySlope" value="0.1" min="0" step="0.01" style="display: none;">
+                        <div class="input-group">
+                            <label for="supplyCapacity">Supply Capacity (FFE)
+                                <span class="info-icon" tabindex="0" aria-label="Supply capacity" data-tooltip="Your maximum capacity constraint. For flat supply, this is the horizontal line level representing your capacity limit (e.g., 2100 FFE for vessel capacity).">ℹ️</span>
+                            </label>
+                            <input type="number" id="supplyCapacity" value="2100" min="0" step="100">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="supplySlope" id="supplySlopeLabel" style="display: none;">Supply Slope ($/unit)
+                                <span class="info-icon" tabindex="0" aria-label="Supply slope" data-tooltip="How much your costs increase per additional unit. Higher slopes mean steeper capacity constraints.">ℹ️</span>
+                            </label>
+                            <input type="number" id="supplySlope" value="0.1" min="0" step="0.01" style="display: none;">
+                        </div>
                     </div>
                 </div>
 

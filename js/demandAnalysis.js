@@ -302,11 +302,22 @@ class DemandAnalysis {
     calculateSupplyCurve() {
         const curveType = document.getElementById('supplyCurveType').value;
         const basePrice = parseFloat(document.getElementById('supplyPrice').value);
+        const capacity = parseFloat(document.getElementById('supplyCapacity').value);
         const slope = parseFloat(document.getElementById('supplySlope').value) || 0;
+        
+        // Validate inputs
+        if (isNaN(basePrice) || basePrice <= 0) {
+            throw new Error('Please enter a valid base supply price');
+        }
+        
+        if (curveType === 'flat' && (isNaN(capacity) || capacity <= 0)) {
+            throw new Error('Please enter a valid supply capacity for flat supply curves');
+        }
         
         return {
             type: curveType,
             basePrice: basePrice,
+            capacity: capacity,
             slope: slope,
             predict: (volume) => {
                 if (curveType === 'flat') {
@@ -321,7 +332,7 @@ class DemandAnalysis {
     findMarketClearing(demandCurve, supplyCurve, maxVolume) {
         if (supplyCurve.type === 'flat') {
             // For horizontal supply (fixed capacity), find where demand intersects capacity line
-            const fixedVolume = maxVolume * 0.5; // Match the fraction used in curve generation
+            const fixedVolume = supplyCurve.capacity; // Use the configured capacity
             
             // For power law demand: Volume = a * Price^b, solve for Price when Volume = fixedVolume
             // Price = (Volume / a)^(1/b)
@@ -417,8 +428,8 @@ class DemandAnalysis {
         if (supplyCurve.type === 'flat') {
             // Flat supply: horizontal line representing fixed capacity
             const step = (maxPrice - minPrice) / (points - 1);
-            // Position supply curve at a realistic capacity level - slightly above max observed volume
-            const fixedVolume = maxVolume * 0.5; // More realistic fraction
+            // Use the configured capacity level
+            const fixedVolume = supplyCurve.capacity;
             for (let i = 0; i < points; i++) {
                 const price = minPrice + i * step;
                 curvePoints.push({ x: price, y: fixedVolume });
@@ -464,7 +475,7 @@ class DemandAnalysis {
             
             // Calculate price and volume ranges for visualization - need wider range for equilibrium points
             const allPrices = [baseline.price, ...afterResult.data.map(d => d.price)];
-            const allVolumes = [baseline.volume, ...afterResult.data.map(d => d.volume)];
+            const allVolumes = [baseline.volume, ...afterResult.data.map(d => d.volume), supplyCurve.capacity];
             
             // Find market clearing points first to include them in range calculation
             const beforeEquilibrium = this.findMarketClearing(beforeCurve, supplyCurve, Math.max(...allVolumes) * 1.2);

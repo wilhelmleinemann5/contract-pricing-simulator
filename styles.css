@@ -1090,7 +1090,7 @@ header p {
 
 .supply-inputs {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 20px;
   align-items: end;
 }
