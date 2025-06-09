@@ -144,8 +144,8 @@ class DemandAnalysis {
                 const logPrediction = Math.log(a) + b * logPrice;
                 const prediction = Math.exp(logPrediction);
                 
-                // Simplified confidence calculation
-                const margin = confidenceMultiplier * standardError * 0.5;
+                // Conservative confidence calculation for baseline curves
+                const margin = confidenceMultiplier * standardError * 0.15; // Small multiplier for believable bands
                 
                 return {
                     predicted: prediction,
@@ -253,21 +253,40 @@ class DemandAnalysis {
         const newA = originalCurve.a * volumeRatio;
         const newB = originalCurve.b; // Keep same price elasticity
         
-        // Significantly increase uncertainty due to single observation extrapolation
-        const baseConfidenceMultiplier = 1.96;
-        const shockUncertaintyMultiplier = 2.5; // Much higher uncertainty
+        // Smart uncertainty calculation based on how far shock is from original confidence interval
+        const originalConfidence = originalCurve.predictWithConfidence(shockPoint.price);
+        const lowerBound = originalConfidence.lower;
+        const upperBound = originalConfidence.upper;
         
-        // Estimate R-squared as lower due to increased uncertainty
-        const estimatedRSquared = Math.max(0.3, originalCurve.rSquared * 0.6);
+        let uncertaintyMultiplier = 1.0; // Start with no change
         
-        // Estimate standard error as higher
-        const estimatedStandardError = originalCurve.standardError * 1.8;
+        if (actualVolume < lowerBound) {
+            // Shock is below lower confidence bound
+            const distanceBelowLower = (lowerBound - actualVolume) / originalConfidence.predicted;
+            uncertaintyMultiplier = 1.0 + Math.min(distanceBelowLower * 0.5, 0.8); // Much more conservative: cap at 1.8x
+        } else if (actualVolume > upperBound) {
+            // Shock is above upper confidence bound
+            const distanceAboveUpper = (actualVolume - upperBound) / originalConfidence.predicted;
+            uncertaintyMultiplier = 1.0 + Math.min(distanceAboveUpper * 0.5, 0.8); // Much more conservative: cap at 1.8x
+        } else {
+            // Shock is within original confidence interval - minimal uncertainty increase
+            uncertaintyMultiplier = 1.05; // Just 5% increase for model adjustment
+        }
         
-        // Use original data statistics as baseline
-        const meanX = originalData.reduce((sum, d) => sum + Math.log(d.price), 0) / originalData.length;
-        const sumX2 = originalData.reduce((sum, d) => sum + Math.pow(Math.log(d.price), 2), 0);
-        const sumX = originalData.reduce((sum, d) => sum + Math.log(d.price), 0);
-        const sxx = sumX2 - (sumX * sumX) / originalData.length;
+        const shockUncertaintyMultiplier = originalCurve.confidenceMultiplier * uncertaintyMultiplier;
+        
+        // Much more conservative R-squared and standard error adjustments
+        let rSquaredAdjustment;
+        if (uncertaintyMultiplier <= 1.05) {
+            rSquaredAdjustment = 0.98; // Minimal degradation if shock was expected
+        } else if (uncertaintyMultiplier <= 1.4) {
+            rSquaredAdjustment = 0.85; // Moderate degradation for moderate surprises
+        } else {
+            rSquaredAdjustment = 0.7; // More significant but still reasonable degradation
+        }
+        
+        const estimatedRSquared = Math.max(0.5, originalCurve.rSquared * rSquaredAdjustment);
+        const estimatedStandardError = originalCurve.standardError * (1 + (uncertaintyMultiplier - 1) * 0.3);
         
         return {
             a: newA,
@@ -275,10 +294,13 @@ class DemandAnalysis {
             rSquared: estimatedRSquared,
             standardError: estimatedStandardError,
             confidenceMultiplier: shockUncertaintyMultiplier,
-            meanX: meanX,
-            sxx: sxx,
+            meanX: originalCurve.meanX,
+            sxx: originalCurve.sxx,
             isShockEstimate: true,
-            shockRatio: volumeRatio,
+            shiftRatio: volumeRatio,
+            volumeShift: actualVolume - expectedVolume,
+            originalBaseline: originalCurve.baselinePoint,
+            shockSurpriseLevel: uncertaintyMultiplier, // Track how surprising the shock was
             equation: `Volume = ${newA.toFixed(2)} × Price^${newB.toFixed(3)} (shock-adjusted)`,
             predict: (price) => newA * Math.pow(price, newB),
             predictWithConfidence: (price) => {
@@ -286,14 +308,13 @@ class DemandAnalysis {
                 const logPrediction = Math.log(newA) + newB * logPrice;
                 const prediction = Math.exp(logPrediction);
                 
-                // Calculate prediction interval with higher uncertainty
-                const h = (1/originalData.length) + Math.pow(logPrice - meanX, 2) / sxx;
-                const margin = shockUncertaintyMultiplier * estimatedStandardError * Math.sqrt(h);
+                // Use much more conservative uncertainty margins to avoid exploding confidence bands
+                const baseMargin = shockUncertaintyMultiplier * estimatedStandardError * 0.2; // Much smaller multiplier
                 
                 return {
                     predicted: prediction,
-                    lower: Math.exp(logPrediction - margin),
-                    upper: Math.exp(logPrediction + margin)
+                    lower: Math.exp(logPrediction - baseMargin),
+                    upper: Math.exp(logPrediction + baseMargin)
                 };
             }
         };
@@ -530,30 +551,30 @@ class DemandAnalysis {
         if (actualVolume < lowerBound) {
             // Shock is below lower confidence bound
             const distanceBelowLower = (lowerBound - actualVolume) / originalConfidence.predicted;
-            uncertaintyMultiplier = 1.0 + Math.min(distanceBelowLower * 2.0, 2.5); // Cap at 3.5x
+            uncertaintyMultiplier = 1.0 + Math.min(distanceBelowLower * 0.5, 0.8); // Much more conservative: cap at 1.8x
         } else if (actualVolume > upperBound) {
             // Shock is above upper confidence bound
             const distanceAboveUpper = (actualVolume - upperBound) / originalConfidence.predicted;
-            uncertaintyMultiplier = 1.0 + Math.min(distanceAboveUpper * 2.0, 2.5); // Cap at 3.5x
+            uncertaintyMultiplier = 1.0 + Math.min(distanceAboveUpper * 0.5, 0.8); // Much more conservative: cap at 1.8x
         } else {
             // Shock is within original confidence interval - minimal uncertainty increase
-            uncertaintyMultiplier = 1.1; // Just 10% increase for model adjustment
+            uncertaintyMultiplier = 1.05; // Just 5% increase for model adjustment
         }
         
         const shockUncertaintyMultiplier = originalCurve.confidenceMultiplier * uncertaintyMultiplier;
         
-        // Adjust R-squared based on how surprising the shock was
+        // Much more conservative R-squared and standard error adjustments
         let rSquaredAdjustment;
-        if (uncertaintyMultiplier <= 1.1) {
-            rSquaredAdjustment = 0.95; // Minimal degradation if shock was expected
-        } else if (uncertaintyMultiplier <= 2.0) {
-            rSquaredAdjustment = 0.7; // Moderate degradation for moderate surprises
+        if (uncertaintyMultiplier <= 1.05) {
+            rSquaredAdjustment = 0.98; // Minimal degradation if shock was expected
+        } else if (uncertaintyMultiplier <= 1.4) {
+            rSquaredAdjustment = 0.85; // Moderate degradation for moderate surprises
         } else {
-            rSquaredAdjustment = 0.4; // Significant degradation for major surprises
+            rSquaredAdjustment = 0.7; // More significant but still reasonable degradation
         }
         
-        const estimatedRSquared = Math.max(0.2, originalCurve.rSquared * rSquaredAdjustment);
-        const estimatedStandardError = originalCurve.standardError * (1 + (uncertaintyMultiplier - 1) * 0.5);
+        const estimatedRSquared = Math.max(0.5, originalCurve.rSquared * rSquaredAdjustment);
+        const estimatedStandardError = originalCurve.standardError * (1 + (uncertaintyMultiplier - 1) * 0.3);
         
         return {
             a: newA,
@@ -575,13 +596,13 @@ class DemandAnalysis {
                 const logPrediction = Math.log(newA) + newB * logPrice;
                 const prediction = Math.exp(logPrediction);
                 
-                // Use the smart uncertainty margins
-                const margin = shockUncertaintyMultiplier * estimatedStandardError * 0.8;
+                // Use much more conservative uncertainty margins to avoid exploding confidence bands
+                const baseMargin = shockUncertaintyMultiplier * estimatedStandardError * 0.2; // Much smaller multiplier
                 
                 return {
                     predicted: prediction,
-                    lower: Math.exp(logPrediction - margin),
-                    upper: Math.exp(logPrediction + margin)
+                    lower: Math.exp(logPrediction - baseMargin),
+                    upper: Math.exp(logPrediction + baseMargin)
                 };
             }
         };
@@ -888,10 +909,10 @@ class DemandAnalysis {
         summary += `<p><strong>Uncertainty Assessment:</strong> The parallel shift approach maintains the confidence in your estimated price sensitivity while acknowledging uncertainty about the demand level shift. Confidence intervals are ${((afterCurve.confidenceMultiplier / beforeCurve.confidenceMultiplier - 1) * 100).toFixed(0)}% wider for the shifted curve, reflecting single-observation extrapolation risk.</p>`;
         
         // Smart uncertainty assessment based on shock surprise level
-        if (afterCurve.shockSurpriseLevel <= 1.1) {
+        if (afterCurve.shockSurpriseLevel <= 1.05) {
             const volumeText = mainShock ? mainShock.volume.toFixed(0) : 'observed';
             summary += `<p><span style="color: var(--maersk-accent-6);">✅ Expected Shock:</span> The observed volume (${volumeText} FFE) fell within your original confidence interval at this price. This validates your baseline model and only requires minimal uncertainty adjustment (${((afterCurve.shockSurpriseLevel - 1) * 100).toFixed(0)}% increase).</p>`;
-        } else if (afterCurve.shockSurpriseLevel <= 2.0) {
+        } else if (afterCurve.shockSurpriseLevel <= 1.4) {
             summary += `<p><span style="color: var(--maersk-accent-4);">⚠️ Moderate Surprise:</span> The shock observation fell outside your original confidence interval but within reasonable bounds. Uncertainty increased by ${((afterCurve.shockSurpriseLevel - 1) * 100).toFixed(0)}% to reflect this moderate surprise. Consider updating your demand understanding.</p>`;
         } else {
             const volumeText = mainShock ? mainShock.volume.toFixed(0) : 'observed';
@@ -909,9 +930,9 @@ class DemandAnalysis {
         summary += `<p><strong>Business Recommendation:</strong> The parallel shift methodology provides a balanced approach to demand estimation from limited shock data. ${Math.abs(priceChangePercent) > 10 ? 'Consider implementing the price adjustment gradually with close monitoring of customer response and volume changes.' : 'The moderate price impact suggests measured adjustments with continued market observation.'}</p>`;
         
         // Enhanced recommendation based on shock surprise level and price impact
-        if (afterCurve.shockSurpriseLevel <= 1.1) {
+        if (afterCurve.shockSurpriseLevel <= 1.05) {
             summary += `<p><strong>Implementation Strategy:</strong> Since the shock was within expected bounds, you can implement pricing changes with normal confidence levels. ${Math.abs(priceChangePercent) > 5 ? 'The suggested price adjustment can be implemented relatively quickly.' : 'Continue monitoring with your existing pricing strategy.'}</p>`;
-        } else if (afterCurve.shockSurpriseLevel <= 2.0) {
+        } else if (afterCurve.shockSurpriseLevel <= 1.4) {
             summary += `<p><strong>Implementation Strategy:</strong> The moderate surprise suggests implementing changes cautiously. Consider phased price adjustments with increased market monitoring to validate the demand shift and gather additional data points.</p>`;
         } else {
             summary += `<p><strong>Implementation Strategy:</strong> The major surprise warrants careful investigation before implementing significant pricing changes. Consider running additional market tests, gathering more data points, and implementing any adjustments in small increments with close monitoring.</p>`;
