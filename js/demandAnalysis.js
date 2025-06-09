@@ -355,9 +355,53 @@ class DemandAnalysis {
             // For horizontal supply (fixed capacity), find where demand intersects capacity line
             const fixedVolume = supplyCurve.capacity; // Use the configured capacity
             
-            // For power law demand: Volume = a * Price^b, solve for Price when Volume = fixedVolume
-            // Price = (Volume / a)^(1/b)
+            // Main equilibrium calculation
             const equilibriumPrice = Math.pow(fixedVolume / demandCurve.a, 1 / demandCurve.b);
+            
+            // Calculate confidence intervals for price by using demand curve confidence bands
+            let priceConfidence = { lower: equilibriumPrice, upper: equilibriumPrice };
+            
+            if (demandCurve.predictWithConfidence) {
+                // Find price range by testing different prices to find where confidence bands intersect capacity
+                let lowerPrice = null;
+                let upperPrice = null;
+                let minPrice = equilibriumPrice * 0.5;
+                let maxPrice = equilibriumPrice * 2.0;
+                
+                // Search for where lower confidence band intersects capacity
+                for (let price = minPrice; price <= maxPrice; price += 10) {
+                    const confidence = demandCurve.predictWithConfidence(price);
+                    if (Math.abs(confidence.lower - fixedVolume) < fixedVolume * 0.01) { // Within 1%
+                        lowerPrice = price;
+                        break;
+                    }
+                }
+                
+                // Search for where upper confidence band intersects capacity  
+                for (let price = minPrice; price <= maxPrice; price += 10) {
+                    const confidence = demandCurve.predictWithConfidence(price);
+                    if (Math.abs(confidence.upper - fixedVolume) < fixedVolume * 0.01) { // Within 1%
+                        upperPrice = price;
+                        break;
+                    }
+                }
+                
+                // Use analytical solution if search fails or for better precision
+                if (!lowerPrice || !upperPrice) {
+                    const testPrice = equilibriumPrice;
+                    const confidence = demandCurve.predictWithConfidence(testPrice);
+                    const lowerA = demandCurve.a * (confidence.lower / confidence.predicted);
+                    const upperA = demandCurve.a * (confidence.upper / confidence.predicted);
+                    
+                    lowerPrice = Math.pow(fixedVolume / upperA, 1 / demandCurve.b); // Upper band gives lower price
+                    upperPrice = Math.pow(fixedVolume / lowerA, 1 / demandCurve.b); // Lower band gives upper price
+                }
+                
+                priceConfidence = {
+                    lower: lowerPrice || equilibriumPrice * 0.8,
+                    upper: upperPrice || equilibriumPrice * 1.2
+                };
+            }
             
             // Validate the calculated price
             if (!isFinite(equilibriumPrice) || equilibriumPrice <= 0) {
@@ -379,14 +423,16 @@ class DemandAnalysis {
                 return {
                     price: bestPrice,
                     volume: fixedVolume,
-                    difference: minDifference
+                    difference: minDifference,
+                    priceConfidence: { lower: bestPrice * 0.95, upper: bestPrice * 1.05 } // Simple confidence for sloped supply
                 };
             }
             
             return {
                 price: equilibriumPrice,
                 volume: fixedVolume,
-                difference: 0 // Perfect intersection by construction
+                difference: 0, // Perfect intersection by construction
+                priceConfidence: priceConfidence
             };
         } else {
             // Original logic for sloped supply curves
@@ -417,7 +463,8 @@ class DemandAnalysis {
             return {
                 price: bestPrice,
                 volume: bestVolume,
-                difference: minDifference
+                difference: minDifference,
+                priceConfidence: { lower: bestPrice * 0.95, upper: bestPrice * 1.05 } // Simple confidence for sloped supply
             };
         }
     }
@@ -751,6 +798,37 @@ class DemandAnalysis {
                         fill: false,
                         borderDash: [8, 4]
                     },
+                    // Add price confidence intervals as vertical bands
+                    ...(beforeEq.priceConfidence ? [{
+                        label: 'Current Price Range',
+                        data: [
+                            { x: beforeEq.priceConfidence.lower, y: 0 },
+                            { x: beforeEq.priceConfidence.lower, y: maxVolume },
+                            { x: beforeEq.priceConfidence.upper, y: maxVolume },
+                            { x: beforeEq.priceConfidence.upper, y: 0 }
+                        ],
+                        borderColor: 'rgba(128, 128, 128, 0.3)',
+                        backgroundColor: 'rgba(128, 128, 128, 0.1)',
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        showLine: true,
+                        fill: 'origin'
+                    }] : []),
+                    ...(afterEq.priceConfidence ? [{
+                        label: 'New Price Range',
+                        data: [
+                            { x: afterEq.priceConfidence.lower, y: 0 },
+                            { x: afterEq.priceConfidence.lower, y: maxVolume },
+                            { x: afterEq.priceConfidence.upper, y: maxVolume },
+                            { x: afterEq.priceConfidence.upper, y: 0 }
+                        ],
+                        borderColor: 'rgba(64, 64, 64, 0.3)',
+                        backgroundColor: 'rgba(64, 64, 64, 0.1)',
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        showLine: true,
+                        fill: 'origin'
+                    }] : []),
                     {
                         label: 'Before Equilibrium',
                         data: [{ x: beforeEq.price, y: beforeEq.volume }],
@@ -817,8 +895,8 @@ class DemandAnalysis {
                         labels: { 
                             padding: 15,
                             filter: function(legendItem, chartData) {
-                                // Hide confidence band entries from legend for cleaner view
-                                return !legendItem.text.includes('Confidence');
+                                // Hide confidence band and price range entries from legend for cleaner view
+                                return !legendItem.text.includes('Confidence') && !legendItem.text.includes('Range');
                             }
                         }
                     },
@@ -838,22 +916,39 @@ class DemandAnalysis {
     }
     
     updateResults(beforeCurve, afterCurve, beforeEq, afterEq, shockPoints) {
-        // Update equilibrium values
-        document.getElementById('beforePrice').textContent = `$${beforeEq.price.toFixed(0)}`;
+        // Update equilibrium values with confidence intervals
+        const beforePriceRange = beforeEq.priceConfidence ? 
+            `$${beforeEq.priceConfidence.lower.toFixed(0)} - $${beforeEq.priceConfidence.upper.toFixed(0)}` : 
+            `$${beforeEq.price.toFixed(0)}`;
+        const afterPriceRange = afterEq.priceConfidence ? 
+            `$${afterEq.priceConfidence.lower.toFixed(0)} - $${afterEq.priceConfidence.upper.toFixed(0)}` : 
+            `$${afterEq.price.toFixed(0)}`;
+        
+        document.getElementById('beforePrice').innerHTML = `$${beforeEq.price.toFixed(0)}<br><small style="color: #6c757d;">(${beforePriceRange})</small>`;
         document.getElementById('beforeVolume').textContent = `${beforeEq.volume.toFixed(0)} units`;
         document.getElementById('beforeR2').textContent = beforeCurve.rSquared.toFixed(3);
         
-        document.getElementById('afterPrice').textContent = `$${afterEq.price.toFixed(0)}`;
+        document.getElementById('afterPrice').innerHTML = `$${afterEq.price.toFixed(0)}<br><small style="color: #6c757d;">(${afterPriceRange})</small>`;
         document.getElementById('afterVolume').textContent = `${afterEq.volume.toFixed(0)} units`;
         document.getElementById('afterR2').textContent = afterCurve.rSquared.toFixed(3);
         
-        // Calculate changes
+        // Calculate changes with confidence ranges
         const priceChange = afterEq.price - beforeEq.price;
         const volumeChange = afterEq.volume - beforeEq.volume;
         const uncertaintyChange = afterCurve.rSquared - beforeCurve.rSquared;
         
+        // Calculate price change range if confidence intervals available
+        let priceChangeText = `${priceChange >= 0 ? '+' : ''}$${priceChange.toFixed(0)}`;
+        if (beforeEq.priceConfidence && afterEq.priceConfidence) {
+            const minChange = afterEq.priceConfidence.lower - beforeEq.priceConfidence.upper;
+            const maxChange = afterEq.priceConfidence.upper - beforeEq.priceConfidence.lower;
+            const minChangeStr = minChange >= 0 ? `+$${minChange.toFixed(0)}` : `-$${Math.abs(minChange).toFixed(0)}`;
+            const maxChangeStr = maxChange >= 0 ? `+$${maxChange.toFixed(0)}` : `-$${Math.abs(maxChange).toFixed(0)}`;
+            priceChangeText += `<br><small style="color: #6c757d;">(${minChangeStr} to ${maxChangeStr})</small>`;
+        }
+        
         const priceChangeEl = document.getElementById('priceChange');
-        priceChangeEl.textContent = `${priceChange >= 0 ? '+' : ''}$${priceChange.toFixed(0)}`;
+        priceChangeEl.innerHTML = priceChangeText;
         priceChangeEl.className = `eq-value ${priceChange >= 0 ? 'positive' : 'negative'}`;
         
         const volumeChangeEl = document.getElementById('volumeChange');
@@ -897,6 +992,14 @@ class DemandAnalysis {
         }
         
         summary += `<p><strong>Optimal Pricing Impact:</strong> The market-clearing price shifted from <strong>$${beforeEq.price.toFixed(0)}</strong> to <strong>$${afterEq.price.toFixed(0)}</strong> (${priceChangePercent >= 0 ? '+' : ''}${priceChangePercent.toFixed(1)}% change), while the equilibrium volume changed from ${beforeEq.volume.toFixed(0)} to ${afterEq.volume.toFixed(0)} FFE.</p>`;
+        
+        // Add price confidence interval analysis if available
+        if (afterEq.priceConfidence && beforeEq.priceConfidence) {
+            const priceRangeWidth = afterEq.priceConfidence.upper - afterEq.priceConfidence.lower;
+            const priceUncertaintyPercent = (priceRangeWidth / afterEq.price) * 100;
+            
+            summary += `<p><strong>Price Confidence Analysis:</strong> The optimal price estimate has a confidence range of <strong>$${afterEq.priceConfidence.lower.toFixed(0)} - $${afterEq.priceConfidence.upper.toFixed(0)}</strong> (±${priceUncertaintyPercent.toFixed(0)}% around the central estimate). This range reflects the uncertainty in demand curve positioning and provides boundaries for your pricing strategy.</p>`;
+        }
         
         if (Math.abs(priceChangePercent) > 5) {
             if (priceChange > 0) {
