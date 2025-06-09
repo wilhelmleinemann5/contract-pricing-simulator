@@ -161,37 +161,63 @@ class DemandAnalysis {
         };
     }
     
-    findMarketClearing(demandCurve, supplyCurve) {
-        // Numerical method to find intersection
-        let bestPrice = null;
-        let bestVolume = null;
-        let minDifference = Infinity;
-        
-        // Search across reasonable price range
-        const minPrice = supplyCurve.basePrice;
-        const maxPrice = minPrice * 3;
-        const steps = 1000;
-        const priceStep = (maxPrice - minPrice) / steps;
-        
-        for (let i = 0; i <= steps; i++) {
-            const price = minPrice + i * priceStep;
-            const demandVolume = demandCurve.predict(price);
-            const supplyPrice = supplyCurve.predict(demandVolume);
+    findMarketClearing(demandCurve, supplyCurve, maxVolume, minPrice, maxPrice) {
+        if (supplyCurve.type === 'flat') {
+            // For horizontal supply (fixed capacity), find where demand intersects capacity line
+            const fixedVolume = maxVolume * 0.4; // Same fraction used in curve generation
             
-            const difference = Math.abs(price - supplyPrice);
+            // Find price where demand equals the fixed capacity
+            let bestPrice = null;
+            let minDifference = Infinity;
             
-            if (difference < minDifference) {
-                minDifference = difference;
-                bestPrice = price;
-                bestVolume = demandVolume;
+            const steps = 1000;
+            const priceStep = (maxPrice - minPrice) / steps;
+            
+            for (let i = 0; i <= steps; i++) {
+                const price = minPrice + i * priceStep;
+                const demandVolume = demandCurve.predict(price);
+                const difference = Math.abs(demandVolume - fixedVolume);
+                
+                if (difference < minDifference) {
+                    minDifference = difference;
+                    bestPrice = price;
+                }
             }
+            
+            return {
+                price: bestPrice,
+                volume: fixedVolume,
+                difference: minDifference
+            };
+        } else {
+            // Original logic for sloped supply curves
+            let bestPrice = null;
+            let bestVolume = null;
+            let minDifference = Infinity;
+            
+            const steps = 1000;
+            const priceStep = (maxPrice - minPrice) / steps;
+            
+            for (let i = 0; i <= steps; i++) {
+                const price = minPrice + i * priceStep;
+                const demandVolume = demandCurve.predict(price);
+                const supplyPrice = supplyCurve.predict(demandVolume);
+                
+                const difference = Math.abs(price - supplyPrice);
+                
+                if (difference < minDifference) {
+                    minDifference = difference;
+                    bestPrice = price;
+                    bestVolume = demandVolume;
+                }
+            }
+            
+            return {
+                price: bestPrice,
+                volume: bestVolume,
+                difference: minDifference
+            };
         }
-        
-        return {
-            price: bestPrice,
-            volume: bestVolume,
-            difference: minDifference
-        };
     }
     
     generateCurvePoints(curve, minPrice, maxPrice, points = 100) {
@@ -209,14 +235,25 @@ class DemandAnalysis {
         return curvePoints;
     }
     
-    generateSupplyCurvePoints(supplyCurve, maxVolume, points = 100) {
-        const step = maxVolume / (points - 1);
+    generateSupplyCurvePoints(supplyCurve, maxVolume, minPrice, maxPrice, points = 100) {
         const curvePoints = [];
         
-        for (let i = 0; i < points; i++) {
-            const volume = i * step;
-            const price = supplyCurve.predict(volume);
-            curvePoints.push({ x: price, y: volume });
+        if (supplyCurve.type === 'flat') {
+            // Flat supply: horizontal line representing fixed capacity
+            const step = (maxPrice - minPrice) / (points - 1);
+            const fixedVolume = maxVolume * 0.4; // Use a reasonable fraction of max volume
+            for (let i = 0; i < points; i++) {
+                const price = minPrice + i * step;
+                curvePoints.push({ x: price, y: fixedVolume });
+            }
+        } else {
+            // Sloped supply: price increases with volume
+            const step = maxVolume / (points - 1);
+            for (let i = 0; i < points; i++) {
+                const volume = i * step;
+                const price = supplyCurve.predict(volume);
+                curvePoints.push({ x: price, y: volume });
+            }
         }
         
         return curvePoints;
@@ -240,6 +277,12 @@ class DemandAnalysis {
                 return;
             }
             
+            // Calculate price and volume ranges
+            const allData = [...beforeResult.data, ...afterResult.data];
+            const minPrice = Math.min(...allData.map(d => d.price)) * 0.8;
+            const maxPrice = Math.max(...allData.map(d => d.price)) * 1.2;
+            const maxVolume = Math.max(...allData.map(d => d.volume)) * 1.2;
+            
             // Fit demand curves
             const beforeCurve = this.fitDemandCurve(beforeResult.data);
             const afterCurve = this.fitDemandCurve(afterResult.data);
@@ -248,11 +291,11 @@ class DemandAnalysis {
             const supplyCurve = this.calculateSupplyCurve();
             
             // Find market clearing points
-            const beforeEquilibrium = this.findMarketClearing(beforeCurve, supplyCurve);
-            const afterEquilibrium = this.findMarketClearing(afterCurve, supplyCurve);
+            const beforeEquilibrium = this.findMarketClearing(beforeCurve, supplyCurve, maxVolume, minPrice, maxPrice);
+            const afterEquilibrium = this.findMarketClearing(afterCurve, supplyCurve, maxVolume, minPrice, maxPrice);
             
             // Update visualization
-            this.updateChart(beforeResult, afterResult, beforeCurve, afterCurve, supplyCurve, beforeEquilibrium, afterEquilibrium);
+            this.updateChart(beforeResult, afterResult, beforeCurve, afterCurve, supplyCurve, beforeEquilibrium, afterEquilibrium, minPrice, maxPrice, maxVolume);
             
             // Update results display
             this.updateResults(beforeCurve, afterCurve, beforeEquilibrium, afterEquilibrium, afterResult.shockPoints);
@@ -265,23 +308,17 @@ class DemandAnalysis {
         }
     }
     
-    updateChart(beforeResult, afterResult, beforeCurve, afterCurve, supplyCurve, beforeEq, afterEq) {
+    updateChart(beforeResult, afterResult, beforeCurve, afterCurve, supplyCurve, beforeEq, afterEq, minPrice, maxPrice, maxVolume) {
         const ctx = document.getElementById('demandChart').getContext('2d');
         
         if (this.demandChart) {
             this.demandChart.destroy();
         }
         
-        // Determine chart ranges
-        const allData = [...beforeResult.data, ...afterResult.data];
-        const minPrice = Math.min(...allData.map(d => d.price)) * 0.8;
-        const maxPrice = Math.max(...allData.map(d => d.price)) * 1.2;
-        const maxVolume = Math.max(...allData.map(d => d.volume)) * 1.2;
-        
         // Generate curve points
         const beforeCurvePoints = this.generateCurvePoints(beforeCurve, minPrice, maxPrice);
         const afterCurvePoints = this.generateCurvePoints(afterCurve, minPrice, maxPrice);
-        const supplyCurvePoints = this.generateSupplyCurvePoints(supplyCurve, maxVolume);
+        const supplyCurvePoints = this.generateSupplyCurvePoints(supplyCurve, maxVolume, minPrice, maxPrice);
         
         this.demandChart = new Chart(ctx, {
             type: 'scatter',
