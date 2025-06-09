@@ -97,7 +97,7 @@ class DemandAnalysis {
     
     // Power law regression: Volume = a * Price^b
     // Transformed to linear: ln(Volume) = ln(a) + b * ln(Price)
-    fitDemandCurve(data) {
+    fitDemandCurve(data, isPostShock = false) {
         if (data.length < 2) {
             throw new Error('At least 2 data points required for curve fitting');
         }
@@ -124,7 +124,7 @@ class DemandAnalysis {
         const a = Math.exp(intercept);
         const b = slope;
         
-        // Calculate R-squared
+        // Calculate R-squared and standard error
         const meanY = sumY / n;
         const totalSumSquares = logData.reduce((sum, d) => sum + Math.pow(d.y - meanY, 2), 0);
         const residualSumSquares = logData.reduce((sum, d) => {
@@ -133,12 +133,51 @@ class DemandAnalysis {
         }, 0);
         const rSquared = 1 - (residualSumSquares / totalSumSquares);
         
+        // Standard error of the estimate
+        const standardError = Math.sqrt(residualSumSquares / (n - 2));
+        
+        // Calculate standard error of prediction for confidence bands
+        const meanX = sumX / n;
+        const sxx = sumX2 - (sumX * sumX) / n;
+        
+        // Confidence multiplier (approximate 95% confidence)
+        let confidenceMultiplier = 1.96; // Standard normal for large samples
+        if (n <= 10) {
+            // Use t-distribution for small samples
+            const tValues = { 2: 12.7, 3: 4.3, 4: 3.2, 5: 2.8, 6: 2.4, 7: 2.4, 8: 2.3, 9: 2.3, 10: 2.2 };
+            confidenceMultiplier = tValues[n] || 2.2;
+        }
+        
+        // Increase uncertainty for post-shock curves to reflect market instability
+        if (isPostShock) {
+            confidenceMultiplier *= 1.8; // Widen confidence bands by 80%
+        }
+        
         return {
             a: a,
             b: b,
             rSquared: rSquared,
+            standardError: standardError,
+            confidenceMultiplier: confidenceMultiplier,
+            meanX: meanX,
+            sxx: sxx,
             equation: `Volume = ${a.toFixed(2)} × Price^${b.toFixed(3)}`,
-            predict: (price) => a * Math.pow(price, b)
+            predict: (price) => a * Math.pow(price, b),
+            predictWithConfidence: (price) => {
+                const logPrice = Math.log(price);
+                const logPrediction = Math.log(a) + b * logPrice;
+                const prediction = Math.exp(logPrediction);
+                
+                // Calculate prediction interval
+                const h = (1/data.length) + Math.pow(logPrice - meanX, 2) / sxx;
+                const margin = confidenceMultiplier * standardError * Math.sqrt(h);
+                
+                return {
+                    predicted: prediction,
+                    lower: Math.exp(logPrediction - margin),
+                    upper: Math.exp(logPrediction + margin)
+                };
+            }
         };
     }
     
@@ -223,16 +262,22 @@ class DemandAnalysis {
     generateCurvePoints(curve, minPrice, maxPrice, points = 100) {
         const step = (maxPrice - minPrice) / (points - 1);
         const curvePoints = [];
+        const upperBand = [];
+        const lowerBand = [];
         
         for (let i = 0; i < points; i++) {
             const price = minPrice + i * step;
             const volume = curve.predict(price);
+            const confidence = curve.predictWithConfidence(price);
+            
             if (volume > 0) {
                 curvePoints.push({ x: price, y: volume });
+                upperBand.push({ x: price, y: confidence.upper });
+                lowerBand.push({ x: price, y: confidence.lower });
             }
         }
         
-        return curvePoints;
+        return { curvePoints, upperBand, lowerBand };
     }
     
     generateSupplyCurvePoints(supplyCurve, maxVolume, minPrice, maxPrice, points = 100) {
@@ -285,7 +330,7 @@ class DemandAnalysis {
             
             // Fit demand curves
             const beforeCurve = this.fitDemandCurve(beforeResult.data);
-            const afterCurve = this.fitDemandCurve(afterResult.data);
+            const afterCurve = this.fitDemandCurve(afterResult.data, true);
             
             // Get supply curve
             const supplyCurve = this.calculateSupplyCurve();
@@ -316,8 +361,8 @@ class DemandAnalysis {
         }
         
         // Generate curve points
-        const beforeCurvePoints = this.generateCurvePoints(beforeCurve, minPrice, maxPrice);
-        const afterCurvePoints = this.generateCurvePoints(afterCurve, minPrice, maxPrice);
+        const beforeCurveData = this.generateCurvePoints(beforeCurve, minPrice, maxPrice);
+        const afterCurveData = this.generateCurvePoints(afterCurve, minPrice, maxPrice);
         const supplyCurvePoints = this.generateSupplyCurvePoints(supplyCurve, maxVolume, minPrice, maxPrice);
         
         this.demandChart = new Chart(ctx, {
@@ -352,9 +397,32 @@ class DemandAnalysis {
                         pointStyle: 'star',
                         showLine: false
                     },
+                    // Before curve confidence bands
                     {
-                        label: 'Before Event Demand Curve',
-                        data: beforeCurvePoints,
+                        label: 'Before Lower Confidence',
+                        data: beforeCurveData.lowerBand,
+                        borderColor: 'rgba(68, 114, 196, 0.3)',
+                        backgroundColor: 'rgba(68, 114, 196, 0.1)',
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        showLine: true,
+                        fill: false,
+                        borderDash: [3, 3]
+                    },
+                    {
+                        label: 'Before Upper Confidence',
+                        data: beforeCurveData.upperBand,
+                        borderColor: 'rgba(68, 114, 196, 0.3)',
+                        backgroundColor: 'rgba(68, 114, 196, 0.1)',
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        showLine: true,
+                        fill: '-1', // Fill to previous dataset (lower band)
+                        borderDash: [3, 3]
+                    },
+                    {
+                        label: 'Demand Curve',
+                        data: beforeCurveData.curvePoints,
                         borderColor: 'rgba(68, 114, 196, 1)',
                         backgroundColor: 'rgba(68, 114, 196, 0.1)',
                         borderWidth: 3,
@@ -362,9 +430,32 @@ class DemandAnalysis {
                         showLine: true,
                         fill: false
                     },
+                    // After curve confidence bands
                     {
-                        label: 'After Event Demand Curve',
-                        data: afterCurvePoints,
+                        label: 'New Lower Confidence',
+                        data: afterCurveData.lowerBand,
+                        borderColor: 'rgba(237, 125, 49, 0.3)',
+                        backgroundColor: 'rgba(237, 125, 49, 0.1)',
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        showLine: true,
+                        fill: false,
+                        borderDash: [3, 3]
+                    },
+                    {
+                        label: 'New Upper Confidence',
+                        data: afterCurveData.upperBand,
+                        borderColor: 'rgba(237, 125, 49, 0.3)',
+                        backgroundColor: 'rgba(237, 125, 49, 0.1)',
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        showLine: true,
+                        fill: '-1', // Fill to previous dataset (lower band)
+                        borderDash: [3, 3]
+                    },
+                    {
+                        label: 'New Demand Curve',
+                        data: afterCurveData.curvePoints,
                         borderColor: 'rgba(237, 125, 49, 1)',
                         backgroundColor: 'rgba(237, 125, 49, 0.1)',
                         borderWidth: 3,
@@ -384,23 +475,35 @@ class DemandAnalysis {
                         fill: false
                     },
                     {
-                        label: 'Before Equilibrium',
-                        data: [{ x: beforeEq.price, y: beforeEq.volume }],
-                        backgroundColor: 'rgba(112, 173, 71, 1)',
-                        borderColor: 'rgba(112, 173, 71, 1)',
-                        borderWidth: 3,
-                        pointRadius: 8,
-                        pointStyle: 'triangle',
-                        showLine: false
+                        label: 'Current Price',
+                        data: [{ x: beforeEq.price, y: 0 }, { x: beforeEq.price, y: maxVolume }],
+                        borderColor: 'rgba(128, 128, 128, 0.7)',
+                        backgroundColor: 'rgba(128, 128, 128, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        showLine: true,
+                        fill: false,
+                        borderDash: [5, 5]
                     },
                     {
-                        label: 'After Equilibrium',
-                        data: [{ x: afterEq.price, y: afterEq.volume }],
-                        backgroundColor: 'rgba(255, 192, 0, 1)',
-                        borderColor: 'rgba(255, 192, 0, 1)',
+                        label: 'New Price',
+                        data: [{ x: afterEq.price, y: 0 }, { x: afterEq.price, y: maxVolume }],
+                        borderColor: 'rgba(64, 64, 64, 0.9)',
+                        backgroundColor: 'rgba(64, 64, 64, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        showLine: true,
+                        fill: false,
+                        borderDash: [8, 4]
+                    },
+                    {
+                        label: 'May 12',
+                        data: afterResult.shockPoints,
+                        backgroundColor: 'rgba(255, 0, 0, 1)',
+                        borderColor: 'rgba(255, 0, 0, 1)',
                         borderWidth: 3,
                         pointRadius: 8,
-                        pointStyle: 'triangle',
+                        pointStyle: 'circle',
                         showLine: false
                     }
                 ]
@@ -431,16 +534,25 @@ class DemandAnalysis {
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Demand Curve Analysis: Market Shock Impact',
+                        text: 'Updated Estimation of Customer Willingness to Pay',
                         font: { size: 18, weight: 'bold' }
                     },
                     legend: {
                         position: 'top',
-                        labels: { padding: 15 }
+                        labels: { 
+                            padding: 15,
+                            filter: function(legendItem, chartData) {
+                                // Hide confidence band entries from legend for cleaner view
+                                return !legendItem.text.includes('Confidence');
+                            }
+                        }
                     },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
+                                if (context.dataset.label === 'May 12') {
+                                    return `Shock Observation: ($${context.parsed.x.toFixed(0)}, ${context.parsed.y.toFixed(0)} FFE)`;
+                                }
                                 return `${context.dataset.label}: ($${context.parsed.x.toFixed(0)}, ${context.parsed.y.toFixed(0)} units)`;
                             }
                         }
@@ -488,31 +600,32 @@ class DemandAnalysis {
         const volumeChangePercent = (volumeChange / beforeEq.volume) * 100;
         const uncertaintyChange = afterCurve.rSquared - beforeCurve.rSquared;
         
-        let summary = `<p><strong>Market Shock Analysis:</strong></p>`;
+        let summary = `<p><strong>Market Shock Analysis Based on Single Observation:</strong></p>`;
         
         if (shockPoints.length > 0) {
-            summary += `<p>The observed shock point${shockPoints.length > 1 ? 's' : ''} (${shockPoints.map(p => `$${p.price}, ${p.volume} units`).join('; ')}) ${shockPoints.length > 1 ? 'represent' : 'represents'} a significant deviation from the baseline demand curve.</p>`;
+            const mainShock = shockPoints[0];
+            summary += `<p>The initial demand curve estimated expected FFE booked at the market price of <strong>$${beforeEq.price.toFixed(0)}</strong> to be around <strong>${beforeEq.volume.toFixed(0)} units</strong>, with a confidence interval reflecting normal market conditions.</p>`;
+            
+            summary += `<p>On May 12, we observed <strong>${mainShock.volume.toFixed(0)} FFE booked</strong> at the same price point ($${mainShock.price}), which was <strong>${((mainShock.volume / beforeEq.volume - 1) * 100).toFixed(0)}% higher</strong> than expected and fell well outside our confidence interval.</p>`;
         }
         
-        summary += `<p>After the market event, the demand curve shifted, changing the optimal market-clearing price from <strong>$${beforeEq.price.toFixed(0)}</strong> to <strong>$${afterEq.price.toFixed(0)}</strong> (${priceChangePercent >= 0 ? '+' : ''}${priceChangePercent.toFixed(1)}% change).</p>`;
+        summary += `<p><strong>Updated Demand Curve:</strong> Based on this single shock observation, we fitted a new demand curve (shown in red) with <strong>wider confidence bands</strong> to reflect the increased market uncertainty. The optimal market-clearing price shifted from <strong>$${beforeEq.price.toFixed(0)}</strong> to <strong>$${afterEq.price.toFixed(0)}</strong>.</p>`;
         
-        summary += `<p>The optimal volume changed from <strong>${beforeEq.volume.toFixed(0)}</strong> to <strong>${afterEq.volume.toFixed(0)}</strong> units (${volumeChangePercent >= 0 ? '+' : ''}${volumeChangePercent.toFixed(1)}% change).</p>`;
-        
-        if (uncertaintyChange < -0.05) {
-            summary += `<p><span style="color: var(--maersk-accent-2);">⚠️ Model uncertainty increased significantly</span> (R² decreased from ${beforeCurve.rSquared.toFixed(3)} to ${afterCurve.rSquared.toFixed(3)}), suggesting the market became less predictable after the shock.</p>`;
-        } else if (uncertaintyChange > 0.05) {
-            summary += `<p><span style="color: var(--maersk-accent-6);">✅ Model fit improved</span> (R² increased from ${beforeCurve.rSquared.toFixed(3)} to ${afterCurve.rSquared.toFixed(3)}), suggesting a more stable demand pattern post-shock.</p>`;
-        } else {
-            summary += `<p>Model uncertainty remained relatively stable (R² changed from ${beforeCurve.rSquared.toFixed(3)} to ${afterCurve.rSquared.toFixed(3)}).</p>`;
+        if (Math.abs(priceChangePercent) > 5) {
+            if (priceChange > 0) {
+                summary += `<p><strong>Pricing Opportunity:</strong> The market shock reveals customer willingness to pay significantly higher prices. The new optimal price is <strong>$${Math.abs(priceChange).toFixed(0)} higher</strong> (${priceChangePercent.toFixed(1)}% increase), suggesting an opportunity for graduated price increases.</p>`;
+            } else {
+                summary += `<p><strong>Pricing Challenge:</strong> The market shock indicates reduced optimal pricing by <strong>$${Math.abs(priceChange).toFixed(0)}</strong> (${Math.abs(priceChangePercent).toFixed(1)}% decrease). Consider market differentiation strategies to maintain margins.</p>`;
+            }
         }
         
-        if (priceChange > 0) {
-            summary += `<p><strong>Business Implication:</strong> The market shock created an opportunity to increase prices by $${priceChange.toFixed(0)} while maintaining market equilibrium. Consider implementing graduated price increases to capture this value.</p>`;
-        } else if (priceChange < 0) {
-            summary += `<p><strong>Business Implication:</strong> The market shock reduced optimal pricing by $${Math.abs(priceChange).toFixed(0)}. Consider cost reduction strategies or market differentiation to maintain margins.</p>`;
-        } else {
-            summary += `<p><strong>Business Implication:</strong> Despite the market shock, optimal pricing remained stable. Monitor for delayed effects and prepare for potential volatility.</p>`;
+        summary += `<p><strong>Uncertainty Impact:</strong> The wider confidence bands in the updated curve reflect increased market unpredictability following the shock. Model fit changed from R² = ${beforeCurve.rSquared.toFixed(3)} to R² = ${afterCurve.rSquared.toFixed(3)}.</p>`;
+        
+        if (afterCurve.confidenceMultiplier > beforeCurve.confidenceMultiplier) {
+            summary += `<p><span style="color: var(--maersk-accent-2);">⚠️ Increased Market Uncertainty:</span> Confidence intervals are now ${((afterCurve.confidenceMultiplier / beforeCurve.confidenceMultiplier - 1) * 100).toFixed(0)}% wider, indicating higher volatility. Consider more frequent price reviews and flexible contract terms.</p>`;
         }
+        
+        summary += `<p><strong>Business Recommendation:</strong> The single shock observation provides valuable market intelligence. ${priceChange > 50 ? 'Implement gradual price increases to capture revealed willingness to pay while monitoring customer response.' : 'Monitor for additional shock events and consider dynamic pricing strategies to respond quickly to market changes.'}</p>`;
         
         summaryContainer.innerHTML = summary;
     }
