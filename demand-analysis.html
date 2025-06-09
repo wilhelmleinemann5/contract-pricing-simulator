@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demand Curve Analysis | Contract Pricing Simulator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Demand Curve Analysis</h1>
+        <p>Analyze market shocks and demand curve shifts with supply/demand equilibrium</p>
+    </header>
+    <nav class="main-nav">
+        <a href="index.html">Main Simulator</a>
+        <a href="option-pricing.html">Option Pricing</a>
+        <a href="demand-analysis.html" class="active">Demand Analysis</a>
+    </nav>
+    <div class="container">
+        <main>
+            <!-- Market Data Input Section -->
+            <section class="demand-analysis-ui">
+                <h2>Market Data Configuration 
+                    <span class="info-icon" tabindex="0" aria-label="Market data setup" data-tooltip="Enter price and volume data points to analyze how demand curves shift before and after market events. Use actual market data or hypothetical scenarios to understand pricing implications.">ℹ️</span>
+                </h2>
+                <p class="section-description">
+                    Model how demand curves shift after market shocks like booking surges, capacity constraints, or external events. Compare equilibrium prices before and after the shock to optimize your pricing strategy.
+                </p>
+                
+                <!-- Supply Curve Settings -->
+                <div class="supply-curve-controls">
+                    <h3>Supply Curve Configuration</h3>
+                    <div class="supply-inputs">
+                        <label for="supplyCurveType">Supply Model
+                            <span class="info-icon" tabindex="0" aria-label="Supply curve type" data-tooltip="Flat supply assumes unlimited capacity at fixed cost. Sloped supply assumes increasing costs with volume (capacity constraints, overtime, etc.).">ℹ️</span>
+                        </label>
+                        <select id="supplyCurveType">
+                            <option value="flat">Flat (Unlimited Capacity)</option>
+                            <option value="sloped">Sloped (Capacity Constraints)</option>
+                        </select>
+                        
+                        <label for="supplyPrice">Base Supply Price ($)
+                            <span class="info-icon" tabindex="0" aria-label="Base supply price" data-tooltip="Your minimum acceptable price or marginal cost. This is where your supply curve starts on the price axis.">ℹ️</span>
+                        </label>
+                        <input type="number" id="supplyPrice" value="2000" min="0" step="50">
+                        
+                        <label for="supplySlope" id="supplySlopeLabel" style="display: none;">Supply Slope ($/unit)
+                            <span class="info-icon" tabindex="0" aria-label="Supply slope" data-tooltip="How much your costs increase per additional unit. Higher slopes mean steeper capacity constraints.">ℹ️</span>
+                        </label>
+                        <input type="number" id="supplySlope" value="0.1" min="0" step="0.01" style="display: none;">
+                    </div>
+                </div>
+
+                <!-- Before Event Data -->
+                <div class="data-input-section">
+                    <h3>Before Event Data 
+                        <span class="info-icon" tabindex="0" aria-label="Before event data" data-tooltip="Historical or baseline market data before any shock occurred. Enter 3-5 price/volume observations to establish your baseline demand curve.">ℹ️</span>
+                    </h3>
+                    <div class="data-table-container">
+                        <table id="beforeDataTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Price ($)</th>
+                                    <th>Volume (units)</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="number" value="1800" min="0"></td>
+                                    <td><input type="number" value="3200" min="0"></td>
+                                    <td><button type="button" class="remove-row-btn">Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="number" value="2100" min="0"></td>
+                                    <td><input type="number" value="2100" min="0"></td>
+                                    <td><button type="button" class="remove-row-btn">Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="number" value="2400" min="0"></td>
+                                    <td><input type="number" value="1500" min="0"></td>
+                                    <td><button type="button" class="remove-row-btn">Remove</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button type="button" id="addBeforeRow" class="add-row-btn">Add Data Point</button>
+                    </div>
+                </div>
+
+                <!-- After Event / Shock Data -->
+                <div class="data-input-section">
+                    <h3>After Event / Shock Data 
+                        <span class="info-icon" tabindex="0" aria-label="After event data" data-tooltip="Market data after a shock event (booking surge, capacity loss, external disruption). Include the shock observation plus any new equilibrium points to fit the new demand curve.">ℹ️</span>
+                    </h3>
+                    <div class="data-table-container">
+                        <table id="afterDataTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Price ($)</th>
+                                    <th>Volume (units)</th>
+                                    <th>Shock Point?</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="number" value="2100" min="0"></td>
+                                    <td><input type="number" value="4888" min="0"></td>
+                                    <td><input type="checkbox" checked></td>
+                                    <td><button type="button" class="remove-row-btn">Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="number" value="2200" min="0"></td>
+                                    <td><input type="number" value="3800" min="0"></td>
+                                    <td><input type="checkbox"></td>
+                                    <td><button type="button" class="remove-row-btn">Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="number" value="2500" min="0"></td>
+                                    <td><input type="number" value="2200" min="0"></td>
+                                    <td><input type="checkbox"></td>
+                                    <td><button type="button" class="remove-row-btn">Remove</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button type="button" id="addAfterRow" class="add-row-btn">Add Data Point</button>
+                    </div>
+                </div>
+
+                <button id="analyzeDemand" class="run-btn">Analyze Demand Curves</button>
+            </section>
+
+            <!-- Analysis Results Section -->
+            <section class="demand-results">
+                <h2>Market Analysis Results</h2>
+                
+                <!-- Chart Container -->
+                <div class="demand-chart-container">
+                    <canvas id="demandChart" width="800" height="500"></canvas>
+                </div>
+
+                <!-- Market Summary -->
+                <div class="market-summary">
+                    <h3>Market Impact Summary</h3>
+                    <div id="marketSummaryContent">
+                        <p><em>Run analysis to see market impact summary...</em></p>
+                    </div>
+                </div>
+
+                <!-- Equilibrium Analysis -->
+                <div class="equilibrium-analysis">
+                    <div class="equilibrium-card">
+                        <h3>Before Event Equilibrium</h3>
+                        <div id="beforeEquilibrium">
+                            <div class="eq-item">
+                                <span class="eq-label">Market Clearing Price:</span>
+                                <span class="eq-value" id="beforePrice">-</span>
+                            </div>
+                            <div class="eq-item">
+                                <span class="eq-label">Market Clearing Volume:</span>
+                                <span class="eq-value" id="beforeVolume">-</span>
+                            </div>
+                            <div class="eq-item">
+                                <span class="eq-label">Demand Curve R²:</span>
+                                <span class="eq-value" id="beforeR2">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="equilibrium-card">
+                        <h3>After Event Equilibrium</h3>
+                        <div id="afterEquilibrium">
+                            <div class="eq-item">
+                                <span class="eq-label">Market Clearing Price:</span>
+                                <span class="eq-value" id="afterPrice">-</span>
+                            </div>
+                            <div class="eq-item">
+                                <span class="eq-label">Market Clearing Volume:</span>
+                                <span class="eq-value" id="afterVolume">-</span>
+                            </div>
+                            <div class="eq-item">
+                                <span class="eq-label">Demand Curve R²:</span>
+                                <span class="eq-value" id="afterR2">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="equilibrium-card">
+                        <h3>Change Analysis</h3>
+                        <div id="changeAnalysis">
+                            <div class="eq-item">
+                                <span class="eq-label">Price Change:</span>
+                                <span class="eq-value" id="priceChange">-</span>
+                            </div>
+                            <div class="eq-item">
+                                <span class="eq-label">Volume Change:</span>
+                                <span class="eq-value" id="volumeChange">-</span>
+                            </div>
+                            <div class="eq-item">
+                                <span class="eq-label">Uncertainty Change:</span>
+                                <span class="eq-value" id="uncertaintyChange">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="js/demandAnalysis.js"></script>
+</body>
+</html> 
