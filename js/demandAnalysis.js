@@ -318,33 +318,43 @@ class DemandAnalysis {
         };
     }
     
-    findMarketClearing(demandCurve, supplyCurve, maxVolume, minPrice, maxPrice) {
+    findMarketClearing(demandCurve, supplyCurve, maxVolume) {
         if (supplyCurve.type === 'flat') {
             // For horizontal supply (fixed capacity), find where demand intersects capacity line
-            const fixedVolume = maxVolume * 0.4; // Same fraction used in curve generation
+            const fixedVolume = maxVolume * 0.5; // Match the fraction used in curve generation
             
-            // Find price where demand equals the fixed capacity
-            let bestPrice = null;
-            let minDifference = Infinity;
+            // For power law demand: Volume = a * Price^b, solve for Price when Volume = fixedVolume
+            // Price = (Volume / a)^(1/b)
+            const equilibriumPrice = Math.pow(fixedVolume / demandCurve.a, 1 / demandCurve.b);
             
-            const steps = 1000;
-            const priceStep = (maxPrice - minPrice) / steps;
-            
-            for (let i = 0; i <= steps; i++) {
-                const price = minPrice + i * priceStep;
-                const demandVolume = demandCurve.predict(price);
-                const difference = Math.abs(demandVolume - fixedVolume);
+            // Validate the calculated price
+            if (!isFinite(equilibriumPrice) || equilibriumPrice <= 0) {
+                console.warn('Invalid equilibrium price calculated, using fallback method');
+                // Fallback to numerical search if analytical solution fails
+                let bestPrice = 1000;
+                let minDifference = Infinity;
                 
-                if (difference < minDifference) {
-                    minDifference = difference;
-                    bestPrice = price;
+                for (let price = 100; price <= 10000; price += 10) {
+                    const demandVolume = demandCurve.predict(price);
+                    const difference = Math.abs(demandVolume - fixedVolume);
+                    
+                    if (difference < minDifference) {
+                        minDifference = difference;
+                        bestPrice = price;
+                    }
                 }
+                
+                return {
+                    price: bestPrice,
+                    volume: fixedVolume,
+                    difference: minDifference
+                };
             }
             
             return {
-                price: bestPrice,
+                price: equilibriumPrice,
                 volume: fixedVolume,
-                difference: minDifference
+                difference: 0 // Perfect intersection by construction
             };
         } else {
             // Original logic for sloped supply curves
@@ -352,6 +362,9 @@ class DemandAnalysis {
             let bestVolume = null;
             let minDifference = Infinity;
             
+            // Search reasonable price range
+            const minPrice = supplyCurve.basePrice * 0.5;
+            const maxPrice = supplyCurve.basePrice * 3;
             const steps = 1000;
             const priceStep = (maxPrice - minPrice) / steps;
             
@@ -404,7 +417,8 @@ class DemandAnalysis {
         if (supplyCurve.type === 'flat') {
             // Flat supply: horizontal line representing fixed capacity
             const step = (maxPrice - minPrice) / (points - 1);
-            const fixedVolume = maxVolume * 0.4; // Use a reasonable fraction of max volume
+            // Position supply curve at a realistic capacity level - slightly above max observed volume
+            const fixedVolume = maxVolume * 0.5; // More realistic fraction
             for (let i = 0; i < points; i++) {
                 const price = minPrice + i * step;
                 curvePoints.push({ x: price, y: fixedVolume });
@@ -445,19 +459,22 @@ class DemandAnalysis {
             const shockPoint = afterResult.data[0];
             const afterCurve = this.createParallelShiftCurve(beforeCurve, shockPoint, baseline);
             
-            // Calculate price and volume ranges for visualization
-            const allPrices = [baseline.price, ...afterResult.data.map(d => d.price)];
-            const allVolumes = [baseline.volume, ...afterResult.data.map(d => d.volume)];
-            const minPrice = Math.min(...allPrices) * 0.8;
-            const maxPrice = Math.max(...allPrices) * 1.2;
-            const maxVolume = Math.max(...allVolumes) * 1.2;
-            
             // Get supply curve
             const supplyCurve = this.calculateSupplyCurve();
             
-            // Find market clearing points
-            const beforeEquilibrium = this.findMarketClearing(beforeCurve, supplyCurve, maxVolume, minPrice, maxPrice);
-            const afterEquilibrium = this.findMarketClearing(afterCurve, supplyCurve, maxVolume, minPrice, maxPrice);
+            // Calculate price and volume ranges for visualization - need wider range for equilibrium points
+            const allPrices = [baseline.price, ...afterResult.data.map(d => d.price)];
+            const allVolumes = [baseline.volume, ...afterResult.data.map(d => d.volume)];
+            
+            // Find market clearing points first to include them in range calculation
+            const beforeEquilibrium = this.findMarketClearing(beforeCurve, supplyCurve, Math.max(...allVolumes) * 1.2);
+            const afterEquilibrium = this.findMarketClearing(afterCurve, supplyCurve, Math.max(...allVolumes) * 1.2);
+            
+            // Expand price range to include equilibrium points with generous margins
+            const allRelevantPrices = [...allPrices, beforeEquilibrium.price, afterEquilibrium.price];
+            const minPrice = Math.min(...allRelevantPrices) * 0.7;
+            const maxPrice = Math.max(...allRelevantPrices) * 1.3;
+            const maxVolume = Math.max(...allVolumes) * 1.2;
             
             // Create synthetic before data for visualization
             const beforeResult = {
