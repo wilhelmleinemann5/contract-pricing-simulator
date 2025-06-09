@@ -649,9 +649,49 @@ header p {
   vertical-align: middle;
   opacity: 0.7;
   transition: opacity 0.2s;
+  cursor: help;
+  position: relative;
 }
-.info-icon:hover, .info-icon:focus {
+.info-icon:hover, 
+.info-icon:focus {
   opacity: 1;
+}
+.info-icon[data-tooltip]:hover::after,
+.info-icon[data-tooltip]:focus::after,
+label .info-icon[data-tooltip]:hover::after,
+label .info-icon[data-tooltip]:focus::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  top: 120%;
+  transform: translateX(-50%);
+  background: var(--maersk-dark-2);
+  color: var(--maersk-light-1);
+  padding: 10px 14px;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  font-size: 0.9rem;
+  z-index: 2000;
+  min-width: 240px;
+  max-width: 320px;
+  box-shadow: 0 4px 12px rgba(68,84,106,0.15);
+  pointer-events: none;
+  line-height: 1.4;
+  font-weight: normal;
+}
+.info-icon[data-tooltip]:hover::before,
+.info-icon[data-tooltip]:focus::before,
+label .info-icon[data-tooltip]:hover::before,
+label .info-icon[data-tooltip]:focus::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 115%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: var(--maersk-dark-2) transparent transparent transparent;
+  z-index: 2001;
 }
 @media (max-width: 900px) {
   .option-pricing-ui {
@@ -975,40 +1015,6 @@ header p {
   border-width: 6px;
   border-style: solid;
   border-color: transparent transparent var(--maersk-dark-2) transparent;
-  z-index: 1001;
-}
-
-/* Enhanced info icon tooltips */
-.info-icon[data-tooltip]:hover::after,
-.info-icon[data-tooltip]:focus::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  left: 50%;
-  top: 120%;
-  transform: translateX(-50%);
-  background: var(--maersk-dark-2);
-  color: var(--maersk-light-1);
-  padding: 10px 14px;
-  border-radius: 8px;
-  white-space: pre-wrap;
-  font-size: 0.9rem;
-  z-index: 1000;
-  min-width: 240px;
-  max-width: 320px;
-  box-shadow: 0 4px 12px rgba(68,84,106,0.15);
-  pointer-events: none;
-  line-height: 1.4;
-}
-.info-icon[data-tooltip]:hover::before,
-.info-icon[data-tooltip]:focus::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 115%;
-  transform: translateX(-50%);
-  border-width: 6px;
-  border-style: solid;
-  border-color: var(--maersk-dark-2) transparent transparent transparent;
   z-index: 1001;
 }
 

@@ -889,7 +889,7 @@ class DemandAnalysis {
             mainShock = shockPoints[0];
             const expectedVolume = beforeCurve.predict(mainShock.price);
             
-            summary += `<p><strong>Shock Analysis:</strong> On May 12, we observed <strong>${mainShock.volume.toFixed(0)} FFE booked</strong> at $${mainShock.price}, compared to the expected ${expectedVolume.toFixed(0)} FFE from your baseline curve. This represents a <strong>${((mainShock.volume / expectedVolume - 1) * 100).toFixed(0)}% ${mainShock.volume > expectedVolume ? 'increase' : 'decrease'}</strong> in demand.</p>`;
+            summary += `<p><strong>Shock Analysis:</strong> We observed <strong>${mainShock.volume.toFixed(0)} FFE booked</strong> at $${mainShock.price}, compared to the expected ${expectedVolume.toFixed(0)} FFE from your baseline curve. This represents a <strong>${((mainShock.volume / expectedVolume - 1) * 100).toFixed(0)}% ${mainShock.volume > expectedVolume ? 'increase' : 'decrease'}</strong> in demand.</p>`;
             
             if (afterCurve.isShockEstimate) {
                 summary += `<p><strong>Parallel Shift Methodology:</strong> The new demand curve (red) was created by parallel-shifting your baseline curve to pass through the shock observation. This maintains the same customer price sensitivity (${sensitivity}% for 10% price change) while accounting for the market shift. The shift ratio of ${afterCurve.shiftRatio.toFixed(2)}x suggests ${afterCurve.shiftRatio > 1 ? 'increased underlying demand' : 'decreased underlying demand'}.</p>`;
@@ -951,4 +951,4 @@ document.addEventListener('DOMContentLoaded', () => {
     window.demandAnalysis = demandAnalysis;
     
     console.log('Demand Analysis loaded successfully');
-}); 
+});
