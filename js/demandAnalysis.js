@@ -11,8 +11,7 @@ class DemandAnalysis {
         // Main analysis button
         document.getElementById('analyzeDemand').addEventListener('click', () => this.runAnalysis());
         
-        // Add row buttons
-        document.getElementById('addBeforeRow').addEventListener('click', () => this.addDataRow('beforeDataTable'));
+        // Add row buttons for shock data only
         document.getElementById('addAfterRow').addEventListener('click', () => this.addDataRow('afterDataTable'));
         
         // Remove row buttons (delegated event handling)
@@ -93,6 +92,68 @@ class DemandAnalysis {
         });
         
         return { data, shockPoints };
+    }
+    
+    getBaselineInputs() {
+        const price = parseFloat(document.getElementById('baselinePrice').value);
+        const volume = parseFloat(document.getElementById('baselineVolume').value);
+        const sensitivity = parseFloat(document.getElementById('priceSensitivity').value);
+        
+        if (isNaN(price) || isNaN(volume) || isNaN(sensitivity) || price <= 0 || volume <= 0 || sensitivity <= 0) {
+            throw new Error('Please enter valid baseline market conditions');
+        }
+        
+        return { price, volume, sensitivity };
+    }
+    
+    createDemandCurveFromBaseline(baselinePoint, priceSensitivity) {
+        // Convert price sensitivity to elasticity
+        // If 10% price increase causes X% volume decrease, elasticity = -X/10
+        const elasticity = -priceSensitivity / 10;
+        
+        // For power law: Volume = a * Price^b
+        // We know: baselineVolume = a * baselinePrice^b
+        // And we know: b = elasticity
+        // So: a = baselineVolume / (baselinePrice^b)
+        
+        const b = elasticity;
+        const a = baselinePoint.volume / Math.pow(baselinePoint.price, b);
+        
+        // Estimate reasonable confidence parameters for user-estimated curves
+        const rSquared = 0.85; // Assume good fit for user-defined curves
+        const standardError = 0.3; // Moderate uncertainty
+        const confidenceMultiplier = 1.96; // Standard 95% confidence
+        
+        // Simple approximations for confidence calculation
+        const meanX = Math.log(baselinePoint.price);
+        const sxx = 1.0; // Simplified for single point
+        
+        return {
+            a: a,
+            b: b,
+            rSquared: rSquared,
+            standardError: standardError,
+            confidenceMultiplier: confidenceMultiplier,
+            meanX: meanX,
+            sxx: sxx,
+            baselinePoint: baselinePoint,
+            equation: `Volume = ${a.toFixed(2)} × Price^${b.toFixed(3)}`,
+            predict: (price) => a * Math.pow(price, b),
+            predictWithConfidence: (price) => {
+                const logPrice = Math.log(price);
+                const logPrediction = Math.log(a) + b * logPrice;
+                const prediction = Math.exp(logPrediction);
+                
+                // Simplified confidence calculation
+                const margin = confidenceMultiplier * standardError * 0.5;
+                
+                return {
+                    predicted: prediction,
+                    lower: Math.exp(logPrediction - margin),
+                    upper: Math.exp(logPrediction + margin)
+                };
+            }
+        };
     }
     
     // Power law regression: Volume = a * Price^b
@@ -365,38 +426,31 @@ class DemandAnalysis {
         try {
             console.log('Running demand curve analysis...');
             
-            // Get data from tables
-            const beforeResult = this.getTableData('beforeDataTable');
+            // Get baseline inputs and shock data
+            const baseline = this.getBaselineInputs();
             const afterResult = this.getTableData('afterDataTable');
-            
-            if (beforeResult.data.length < 2) {
-                alert('Please enter at least 2 data points for before event data.');
-                return;
-            }
             
             if (afterResult.data.length < 1) {
                 alert('Please enter at least 1 shock observation for after event data.');
                 return;
             }
             
-            // Calculate price and volume ranges
-            const allData = [...beforeResult.data, ...afterResult.data];
-            const minPrice = Math.min(...allData.map(d => d.price)) * 0.8;
-            const maxPrice = Math.max(...allData.map(d => d.price)) * 1.2;
-            const maxVolume = Math.max(...allData.map(d => d.volume)) * 1.2;
+            // Create baseline demand curve from single point + sensitivity
+            const beforeCurve = this.createDemandCurveFromBaseline(
+                { price: baseline.price, volume: baseline.volume }, 
+                baseline.sensitivity
+            );
             
-            // Fit demand curves
-            const beforeCurve = this.fitDemandCurve(beforeResult.data);
+            // Handle shock with parallel shift approach
+            const shockPoint = afterResult.data[0];
+            const afterCurve = this.createParallelShiftCurve(beforeCurve, shockPoint, baseline);
             
-            // Handle single shock observation case
-            let afterCurve;
-            if (afterResult.data.length === 1) {
-                // Special case: single shock observation
-                afterCurve = this.estimateCurveFromShock(beforeCurve, afterResult.data[0], beforeResult.data);
-            } else {
-                // Multiple observations: fit normally
-                afterCurve = this.fitDemandCurve(afterResult.data, true);
-            }
+            // Calculate price and volume ranges for visualization
+            const allPrices = [baseline.price, ...afterResult.data.map(d => d.price)];
+            const allVolumes = [baseline.volume, ...afterResult.data.map(d => d.volume)];
+            const minPrice = Math.min(...allPrices) * 0.8;
+            const maxPrice = Math.max(...allPrices) * 1.2;
+            const maxVolume = Math.max(...allVolumes) * 1.2;
             
             // Get supply curve
             const supplyCurve = this.calculateSupplyCurve();
@@ -404,6 +458,12 @@ class DemandAnalysis {
             // Find market clearing points
             const beforeEquilibrium = this.findMarketClearing(beforeCurve, supplyCurve, maxVolume, minPrice, maxPrice);
             const afterEquilibrium = this.findMarketClearing(afterCurve, supplyCurve, maxVolume, minPrice, maxPrice);
+            
+            // Create synthetic before data for visualization
+            const beforeResult = {
+                data: [{ price: baseline.price, volume: baseline.volume }],
+                shockPoints: []
+            };
             
             // Update visualization
             this.updateChart(beforeResult, afterResult, beforeCurve, afterCurve, supplyCurve, beforeEquilibrium, afterEquilibrium, minPrice, maxPrice, maxVolume);
@@ -417,6 +477,55 @@ class DemandAnalysis {
             console.error('Error in demand analysis:', error);
             alert('Error running analysis: ' + error.message);
         }
+    }
+    
+    createParallelShiftCurve(originalCurve, shockPoint, baseline) {
+        // Calculate the volume difference at the shock price point
+        const expectedVolume = originalCurve.predict(shockPoint.price);
+        const actualVolume = shockPoint.volume;
+        const volumeShift = actualVolume - expectedVolume;
+        
+        // Create parallel shifted curve: same elasticity (b), but shifted volume
+        // New curve: Volume = a * Price^b + shift
+        // But to maintain power law form, we'll adjust 'a' to approximate the shift
+        const shiftRatio = actualVolume / expectedVolume;
+        const newA = originalCurve.a * shiftRatio;
+        const newB = originalCurve.b; // Keep same elasticity
+        
+        // Increase uncertainty significantly for shock-based estimates
+        const shockUncertaintyMultiplier = 2.8;
+        const estimatedRSquared = Math.max(0.25, originalCurve.rSquared * 0.5);
+        const estimatedStandardError = originalCurve.standardError * 2.0;
+        
+        return {
+            a: newA,
+            b: newB,
+            rSquared: estimatedRSquared,
+            standardError: estimatedStandardError,
+            confidenceMultiplier: shockUncertaintyMultiplier,
+            meanX: originalCurve.meanX,
+            sxx: originalCurve.sxx,
+            isShockEstimate: true,
+            shiftRatio: shiftRatio,
+            volumeShift: volumeShift,
+            originalBaseline: baseline,
+            equation: `Volume = ${newA.toFixed(2)} × Price^${newB.toFixed(3)} (parallel shift)`,
+            predict: (price) => newA * Math.pow(price, newB),
+            predictWithConfidence: (price) => {
+                const logPrice = Math.log(price);
+                const logPrediction = Math.log(newA) + newB * logPrice;
+                const prediction = Math.exp(logPrediction);
+                
+                // Higher uncertainty margins for shock estimates
+                const margin = shockUncertaintyMultiplier * estimatedStandardError * 0.8;
+                
+                return {
+                    predicted: prediction,
+                    lower: Math.exp(logPrediction - margin),
+                    upper: Math.exp(logPrediction + margin)
+                };
+            }
+        };
     }
     
     updateChart(beforeResult, afterResult, beforeCurve, afterCurve, supplyCurve, beforeEq, afterEq, minPrice, maxPrice, maxVolume) {
@@ -563,6 +672,26 @@ class DemandAnalysis {
                         borderDash: [8, 4]
                     },
                     {
+                        label: 'Before Equilibrium',
+                        data: [{ x: beforeEq.price, y: beforeEq.volume }],
+                        backgroundColor: 'rgba(112, 173, 71, 1)',
+                        borderColor: 'rgba(112, 173, 71, 1)',
+                        borderWidth: 3,
+                        pointRadius: 8,
+                        pointStyle: 'triangle',
+                        showLine: false
+                    },
+                    {
+                        label: 'After Equilibrium',
+                        data: [{ x: afterEq.price, y: afterEq.volume }],
+                        backgroundColor: 'rgba(255, 192, 0, 1)',
+                        borderColor: 'rgba(255, 192, 0, 1)',
+                        borderWidth: 3,
+                        pointRadius: 8,
+                        pointStyle: 'triangle',
+                        showLine: false
+                    },
+                    {
                         label: 'May 12',
                         data: afterResult.shockPoints,
                         backgroundColor: 'rgba(255, 0, 0, 1)',
@@ -664,48 +793,47 @@ class DemandAnalysis {
         
         const priceChangePercent = (priceChange / beforeEq.price) * 100;
         const volumeChangePercent = (volumeChange / beforeEq.volume) * 100;
-        const uncertaintyChange = afterCurve.rSquared - beforeCurve.rSquared;
         
-        let summary = `<p><strong>Market Shock Analysis Based on ${afterCurve.isShockEstimate ? 'Single' : 'Multiple'} Observation${afterCurve.isShockEstimate ? '' : 's'}:</strong></p>`;
+        let summary = `<p><strong>Demand Analysis Based on Price Sensitivity & Shock Observation:</strong></p>`;
+        
+        if (beforeCurve.baselinePoint) {
+            const baseline = beforeCurve.baselinePoint;
+            const sensitivity = (-beforeCurve.b * 10).toFixed(1); // Convert back to % for 10% price change
+            summary += `<p>The baseline demand curve was constructed from your current market observation ($${baseline.price}, ${baseline.volume.toFixed(0)} FFE) with estimated customer price sensitivity of ${sensitivity}% (volume change for 10% price change).</p>`;
+        }
         
         if (shockPoints.length > 0) {
             const mainShock = shockPoints[0];
-            summary += `<p>The initial demand curve estimated expected FFE booked at the market price of <strong>$${beforeEq.price.toFixed(0)}</strong> to be around <strong>${beforeEq.volume.toFixed(0)} units</strong>, with a confidence interval reflecting normal market conditions.</p>`;
+            const expectedVolume = beforeCurve.predict(mainShock.price);
+            
+            summary += `<p><strong>Shock Analysis:</strong> On May 12, we observed <strong>${mainShock.volume.toFixed(0)} FFE booked</strong> at $${mainShock.price}, compared to the expected ${expectedVolume.toFixed(0)} FFE from your baseline curve. This represents a <strong>${((mainShock.volume / expectedVolume - 1) * 100).toFixed(0)}% ${mainShock.volume > expectedVolume ? 'increase' : 'decrease'}</strong> in demand.</p>`;
             
             if (afterCurve.isShockEstimate) {
-                summary += `<p>On May 12, we observed <strong>${mainShock.volume.toFixed(0)} FFE booked</strong> at the same price point ($${mainShock.price}), which was <strong>${((mainShock.volume / beforeEq.volume - 1) * 100).toFixed(0)}% ${mainShock.volume > beforeEq.volume ? 'higher' : 'lower'}</strong> than expected.</p>`;
-                
-                summary += `<p><strong>Single Observation Methodology:</strong> With only one shock observation, we shifted the original demand curve by the observed volume ratio (${afterCurve.shockRatio.toFixed(2)}x) while maintaining the same price elasticity. This approach reflects the reality that during market shocks, you often only get one clear signal before needing to make pricing decisions.</p>`;
-            } else {
-                summary += `<p>Based on multiple post-shock observations, we observed volume changes ranging from the initial shock of <strong>${mainShock.volume.toFixed(0)} FFE booked</strong> to subsequent market behavior.</p>`;
+                summary += `<p><strong>Parallel Shift Methodology:</strong> The new demand curve (red) was created by parallel-shifting your baseline curve to pass through the shock observation. This maintains the same customer price sensitivity (${sensitivity}% for 10% price change) while accounting for the market shift. The shift ratio of ${afterCurve.shiftRatio.toFixed(2)}x suggests ${afterCurve.shiftRatio > 1 ? 'increased underlying demand' : 'decreased underlying demand'}.</p>`;
             }
         }
         
-        if (afterCurve.isShockEstimate) {
-            summary += `<p><strong>Demand Curve Estimate:</strong> The new demand curve (red) was estimated by shifting the original curve to pass through the shock observation. The <strong>significantly wider confidence bands</strong> (${((afterCurve.confidenceMultiplier / beforeCurve.confidenceMultiplier - 1) * 100).toFixed(0)}% wider) reflect the increased uncertainty when extrapolating from a single data point.</p>`;
-        } else {
-            summary += `<p><strong>Updated Demand Curve:</strong> Based on multiple observations, we fitted a new demand curve (shown in red) with <strong>wider confidence bands</strong> to reflect the increased market uncertainty. The optimal market-clearing price shifted from <strong>$${beforeEq.price.toFixed(0)}</strong> to <strong>$${afterEq.price.toFixed(0)}</strong>.</p>`;
-        }
-        
-        summary += `<p><strong>Price Impact:</strong> The optimal market-clearing price shifted from <strong>$${beforeEq.price.toFixed(0)}</strong> to <strong>$${afterEq.price.toFixed(0)}</strong> (${priceChangePercent >= 0 ? '+' : ''}${priceChangePercent.toFixed(1)}% change).</p>`;
+        summary += `<p><strong>Optimal Pricing Impact:</strong> The market-clearing price shifted from <strong>$${beforeEq.price.toFixed(0)}</strong> to <strong>$${afterEq.price.toFixed(0)}</strong> (${priceChangePercent >= 0 ? '+' : ''}${priceChangePercent.toFixed(1)}% change), while the equilibrium volume changed from ${beforeEq.volume.toFixed(0)} to ${afterEq.volume.toFixed(0)} FFE.</p>`;
         
         if (Math.abs(priceChangePercent) > 5) {
             if (priceChange > 0) {
-                summary += `<p><strong>Pricing Opportunity:</strong> The market shock reveals customer willingness to pay significantly higher prices. The new optimal price is <strong>$${Math.abs(priceChange).toFixed(0)} higher</strong> (${priceChangePercent.toFixed(1)}% increase), suggesting an opportunity for graduated price increases.</p>`;
+                summary += `<p><strong>Pricing Opportunity:</strong> The shock reveals potential for price increases of <strong>$${Math.abs(priceChange).toFixed(0)} (${priceChangePercent.toFixed(1)}%)</strong>. Given the parallel shift nature, this suggests sustained demand increase rather than temporary volatility.</p>`;
             } else {
-                summary += `<p><strong>Pricing Challenge:</strong> The market shock indicates reduced optimal pricing by <strong>$${Math.abs(priceChange).toFixed(0)}</strong> (${Math.abs(priceChangePercent).toFixed(1)}% decrease). Consider market differentiation strategies to maintain margins.</p>`;
+                summary += `<p><strong>Pricing Challenge:</strong> The shock indicates optimal pricing should decrease by <strong>$${Math.abs(priceChange).toFixed(0)} (${Math.abs(priceChangePercent).toFixed(1)}%)</strong>. Consider market conditions that may have reduced underlying demand.</p>`;
             }
         }
         
-        summary += `<p><strong>Uncertainty Impact:</strong> Model fit changed from R² = ${beforeCurve.rSquared.toFixed(3)} to R² = ${afterCurve.rSquared.toFixed(3)}. ${afterCurve.isShockEstimate ? 'The lower R² reflects the inherent uncertainty in single-observation extrapolation.' : 'The change in R² indicates how the shock affected demand predictability.'}</p>`;
+        summary += `<p><strong>Uncertainty Assessment:</strong> The parallel shift approach maintains the confidence in your estimated price sensitivity while acknowledging uncertainty about the demand level shift. Confidence intervals are ${((afterCurve.confidenceMultiplier / beforeCurve.confidenceMultiplier - 1) * 100).toFixed(0)}% wider for the shifted curve, reflecting single-observation extrapolation risk.</p>`;
         
-        if (afterCurve.isShockEstimate) {
-            summary += `<p><span style="color: var(--maersk-accent-2);">⚠️ Single Observation Uncertainty:</span> Confidence intervals are now ${((afterCurve.confidenceMultiplier / beforeCurve.confidenceMultiplier - 1) * 100).toFixed(0)}% wider, reflecting the high uncertainty when extrapolating from one shock event. Consider collecting additional data points to validate the demand shift.</p>`;
+        if (afterCurve.shiftRatio > 1.2) {
+            summary += `<p><span style="color: var(--maersk-accent-6);">📈 Strong Demand Signal:</span> The ${((afterCurve.shiftRatio - 1) * 100).toFixed(0)}% demand increase suggests robust market appetite. Consider implementing graduated price increases while monitoring for sustainability.</p>`;
+        } else if (afterCurve.shiftRatio < 0.8) {
+            summary += `<p><span style="color: var(--maersk-accent-2);">📉 Demand Concern:</span> The ${((1 - afterCurve.shiftRatio) * 100).toFixed(0)}% demand decrease warrants careful analysis. Investigate market drivers and consider defensive pricing strategies.</p>`;
         } else {
-            summary += `<p><span style="color: var(--maersk-accent-2);">⚠️ Increased Market Uncertainty:</span> Confidence intervals are now ${((afterCurve.confidenceMultiplier / beforeCurve.confidenceMultiplier - 1) * 100).toFixed(0)}% wider, indicating higher volatility. Consider more frequent price reviews and flexible contract terms.</p>`;
+            summary += `<p><span style="color: var(--maersk-accent-3);">⚖️ Moderate Impact:</span> The demand shift is relatively modest. Monitor for additional signals before making significant pricing changes.</p>`;
         }
         
-        summary += `<p><strong>Business Recommendation:</strong> ${afterCurve.isShockEstimate ? 'The single shock observation provides valuable but limited market intelligence. Consider implementing cautious price adjustments while monitoring for additional signals to validate the demand shift.' : 'Multiple observations provide stronger evidence for demand changes. ' + (priceChange > 50 ? 'Implement gradual price increases to capture revealed willingness to pay while monitoring customer response.' : 'Monitor for additional shock events and consider dynamic pricing strategies to respond quickly to market changes.')}</p>`;
+        summary += `<p><strong>Business Recommendation:</strong> The parallel shift methodology provides a balanced approach to demand estimation from limited shock data. ${Math.abs(priceChangePercent) > 10 ? 'Consider implementing the price adjustment gradually with close monitoring of customer response and volume changes.' : 'The moderate price impact suggests measured adjustments with continued market observation.'}</p>`;
         
         summaryContainer.innerHTML = summary;
     }

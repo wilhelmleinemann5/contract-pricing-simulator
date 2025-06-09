@@ -1348,4 +1348,53 @@ header p {
   .equilibrium-card {
     padding: 16px;
   }
+}
+
+.baseline-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  align-items: end;
+  background: var(--maersk-light-2);
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid var(--maersk-accent-3);
+}
+
+.baseline-inputs .input-group {
+  margin-bottom: 0;
+}
+
+.baseline-inputs .input-group label {
+  font-weight: 600;
+  color: var(--maersk-dark-2);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 1rem;
+}
+
+.baseline-inputs .input-group input {
+  padding: 10px 12px;
+  border: 1.5px solid var(--maersk-accent-3);
+  border-radius: 6px;
+  font-size: 1rem;
+  background: var(--maersk-light-1);
+  color: var(--maersk-dark-1);
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .baseline-inputs {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .baseline-inputs {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 } 

@@ -57,37 +57,31 @@
 
                 <!-- Before Event Data -->
                 <div class="data-input-section">
-                    <h3>Before Event Data 
-                        <span class="info-icon" tabindex="0" aria-label="Before event data" data-tooltip="Historical or baseline market data before any shock occurred. Enter 3-5 price/volume observations to establish your baseline demand curve.">ℹ️</span>
+                    <h3>Baseline Market Conditions 
+                        <span class="info-icon" tabindex="0" aria-label="Baseline conditions" data-tooltip="Enter your current market observation and estimate how sensitive customers are to price changes. This creates your baseline demand curve.">ℹ️</span>
                     </h3>
-                    <div class="data-table-container">
-                        <table id="beforeDataTable" class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Price ($)</th>
-                                    <th>Volume (units)</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><input type="number" value="1800" min="0"></td>
-                                    <td><input type="number" value="3200" min="0"></td>
-                                    <td><button type="button" class="remove-row-btn">Remove</button></td>
-                                </tr>
-                                <tr>
-                                    <td><input type="number" value="2100" min="0"></td>
-                                    <td><input type="number" value="2100" min="0"></td>
-                                    <td><button type="button" class="remove-row-btn">Remove</button></td>
-                                </tr>
-                                <tr>
-                                    <td><input type="number" value="2400" min="0"></td>
-                                    <td><input type="number" value="1500" min="0"></td>
-                                    <td><button type="button" class="remove-row-btn">Remove</button></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <button type="button" id="addBeforeRow" class="add-row-btn">Add Data Point</button>
+                    <div class="baseline-inputs">
+                        <div class="input-group">
+                            <label for="baselinePrice">Current Market Price ($)
+                                <span class="info-icon" tabindex="0" aria-label="Current price" data-tooltip="The price you're currently charging or observing in the market.">ℹ️</span>
+                            </label>
+                            <input type="number" id="baselinePrice" value="2100" min="0" step="50">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="baselineVolume">Current Volume (FFE)
+                                <span class="info-icon" tabindex="0" aria-label="Current volume" data-tooltip="The volume you're seeing at the current price point.">ℹ️</span>
+                            </label>
+                            <input type="number" id="baselineVolume" value="2100" min="0" step="100">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="priceSensitivity">Customer Price Sensitivity (%)
+                                <span class="info-icon" tabindex="0" aria-label="Price sensitivity" data-tooltip="How much volume changes when you change price by 10%. For example: if you raise price 10% and volume drops 15%, enter 15. Higher numbers mean more price-sensitive customers.">ℹ️</span>
+                            </label>
+                            <input type="number" id="priceSensitivity" value="15" min="1" max="50" step="1">
+                            <span class="input-helper">% volume change for 10% price change</span>
+                        </div>
                     </div>
                 </div>
 
