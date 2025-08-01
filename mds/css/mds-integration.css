@@ -447,121 +447,361 @@ Based on MDS v2 design tokens and foundations
    APPLICATION-SPECIFIC INTEGRATION STYLES
    ========================================================================== */
 
-/* Header with Maersk logo styling */
+/* Professional header inspired by internal Maersk UI */
 .header-content {
-  padding: var(--mds-space-400) 0;
-  border-bottom: 1px solid var(--mds-border-color-weak);
-  margin-bottom: var(--mds-space-600);
+  padding: var(--mds-space-600) 0 var(--mds-space-500) 0;
+  background: linear-gradient(135deg, #0077BE 0%, #003F5C 100%);
+  margin: 0 -20px var(--mds-space-700) -20px;
+  border-radius: 0;
+}
+
+.header-left {
+  width: 100%;
+  padding: 0 var(--mds-space-600);
 }
 
 .maersk-logo {
-  height: 32px;
+  height: 40px;
   width: auto;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  filter: brightness(1.1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 .header-text h1 {
-  color: var(--mds-color-primary);
+  color: white !important;
   font-weight: var(--mds-font-weight-bold);
+  font-size: 2.25rem;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .header-text p {
+  color: rgba(255, 255, 255, 0.9) !important;
+  margin: var(--mds-space-200) 0 0 0;
+  font-size: 1.1rem;
+  font-weight: var(--mds-font-weight-normal);
+}
+
+/* Container improvements for better spacing */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--mds-space-500);
+}
+
+/* Navigation improvements inspired by internal UI */
+.main-nav {
+  margin: 0 -20px var(--mds-space-700) -20px;
+  padding: 0 var(--mds-space-600);
+  background: #f8f9fa;
+  border-bottom: 1px solid var(--mds-border-color-default);
+}
+
+.main-nav a {
+  display: inline-block;
+  padding: var(--mds-space-400) var(--mds-space-500);
   color: var(--mds-color-neutral-weak);
-  margin-top: var(--mds-space-100);
+  text-decoration: none;
+  font-weight: var(--mds-font-weight-medium);
+  font-size: 1rem;
+  border-bottom: 3px solid transparent;
+  transition: all var(--mds-transition-fast);
+  margin-right: var(--mds-space-300);
+}
+
+.main-nav a:hover {
+  color: var(--mds-color-primary);
+  background: rgba(0, 119, 190, 0.05);
+  border-bottom-color: var(--mds-color-primary);
+}
+
+.main-nav a.active {
+  color: var(--mds-color-primary);
+  background: rgba(0, 119, 190, 0.1);
+  border-bottom-color: var(--mds-color-primary);
+  font-weight: var(--mds-font-weight-bold);
+}
+
+/* Main content layout improvements */
+.main-content {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: var(--mds-space-700);
+  margin-top: var(--mds-space-600);
+}
+
+/* Input panel styling inspired by internal UI */
+.input-panel.mds-card {
+  height: fit-content;
+  position: sticky;
+  top: var(--mds-space-500);
+}
+
+.input-panel .mds-card__header {
+  background: linear-gradient(135deg, #0077BE, #005A8B);
+  color: white;
+  padding: var(--mds-space-500);
+}
+
+.input-panel .mds-card__header h2 {
+  color: white !important;
+  font-size: 1.25rem;
+  font-weight: var(--mds-font-weight-bold);
+}
+
+.input-panel .mds-card__body {
+  padding: var(--mds-space-500);
+}
+
+/* Results panel improvements */
+.results-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mds-space-600);
+}
+
+/* Chart container improvements - make them much larger */
+.chart-container {
+  min-height: 500px;
+  background: white;
+  border-radius: var(--mds-border-radius-lg);
+  overflow: hidden;
+}
+
+.chart-container.mds-card .mds-card__body {
+  padding: var(--mds-space-500);
+  min-height: 450px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart-container canvas {
+  max-width: 100%;
+  height: 400px !important;
+  width: 100% !important;
+  display: block;
+  margin: 0 auto;
+  background: white !important;
+}
+
+/* Stats container grid layout */
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--mds-space-500);
+}
+
+/* Card enhancements inspired by internal UI */
+.mds-card {
+  border-radius: var(--mds-border-radius-lg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: all var(--mds-transition-base);
+}
+
+.mds-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.mds-card__header {
+  background: #f8f9fa;
+  border-bottom: 1px solid var(--mds-border-color-weak);
+  padding: var(--mds-space-400) var(--mds-space-500);
+}
+
+.mds-card__header h3 {
+  color: var(--mds-color-neutral-strong);
+  font-weight: var(--mds-font-weight-bold);
+  font-size: 1.1rem;
+}
+
+/* Input improvements */
+.input-group {
+  margin-bottom: var(--mds-space-400);
+}
+
+.mds-input {
+  padding: var(--mds-space-300);
+  font-size: 1rem;
+  border-radius: var(--mds-border-radius-md);
+  border: 2px solid var(--mds-border-color-default);
+  transition: all var(--mds-transition-fast);
+}
+
+.mds-input:focus {
+  border-color: var(--mds-color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 119, 190, 0.1);
+  outline: none;
+}
+
+.mds-label {
+  font-weight: var(--mds-font-weight-medium);
+  color: var(--mds-color-neutral-strong);
+  margin-bottom: var(--mds-space-200);
+  font-size: 0.95rem;
+}
+
+/* Button enhancements inspired by internal UI */
+.mds-button.run-btn {
+  background: linear-gradient(135deg, #0077BE, #005A8B);
+  border: none;
+  padding: var(--mds-space-400) var(--mds-space-600);
+  font-size: 1.1rem;
+  font-weight: var(--mds-font-weight-bold);
+  color: white;
+  border-radius: var(--mds-border-radius-md);
+  box-shadow: 0 4px 12px rgba(0, 119, 190, 0.3);
+  transition: all var(--mds-transition-fast);
+  text-transform: none;
+  letter-spacing: 0.5px;
+}
+
+.mds-button.run-btn:hover {
+  background: linear-gradient(135deg, #005A8B, #0077BE);
+  box-shadow: 0 6px 16px rgba(0, 119, 190, 0.4);
+  transform: translateY(-2px);
+}
+
+.mds-button--secondary {
+  background: white;
+  border: 2px solid var(--mds-border-color-default);
+  color: var(--mds-color-neutral-strong);
+  padding: var(--mds-space-300) var(--mds-space-400);
+  font-weight: var(--mds-font-weight-medium);
+}
+
+.mds-button--secondary:hover {
+  border-color: var(--mds-color-primary);
+  color: var(--mds-color-primary);
+  background: rgba(0, 119, 190, 0.05);
 }
 
 /* Improve color contrast for better readability */
 :root {
   /* Enhanced color contrast */
-  --mds-text-color-secondary: #495057; /* Darker gray for better contrast */
-  --mds-border-color-default: #DEE2E6; /* Lighter border for better separation */
-  --mds-background-color-neutral-weak: #F8F9FA; /* Slightly more contrast */
+  --mds-text-color-secondary: #495057;
+  --mds-border-color-default: #DEE2E6;
+  --mds-background-color-neutral-weak: #F8F9FA;
 }
 
-/* Chart container improvements - ensure charts are visible */
-.chart-container {
-  min-height: 400px;
-  background: var(--mds-background-color-default);
-  border-radius: var(--mds-border-radius-lg);
-  overflow: hidden;
-}
-
-.chart-container canvas {
-  max-width: 100%;
-  height: auto !important;
-  display: block;
-  margin: 0 auto;
-}
-
-/* Ensure Chart.js canvas is properly sized */
-.chart-container.mds-card .mds-card__body {
-  padding: var(--mds-space-400);
-  min-height: 350px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Fix chart loading issues */
-canvas#priceChart,
-canvas#costDistributionChart {
-  background-color: transparent !important;
+/* Loading state improvements */
+.debug-info {
+  padding: var(--mds-space-300);
+  background: linear-gradient(135deg, rgba(0, 119, 190, 0.1), rgba(0, 119, 190, 0.05));
+  border: 1px solid rgba(0, 119, 190, 0.2);
   border-radius: var(--mds-border-radius-md);
-}
-
-/* Loading state for charts */
-.chart-container:empty::before {
-  content: "Loading chart...";
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 300px;
-  color: var(--mds-text-color-secondary);
-  font-style: italic;
-}
-
-/* Make MDS inputs work with existing input-group layout */
-.input-group .mds-input {
-  margin-bottom: var(--mds-space-100);
-}
-
-/* Improve MDS button integration with existing button styling */
-.mds-button.run-btn {
-  font-size: var(--mds-font-size-lg);
-  padding: var(--mds-space-300) var(--mds-space-600);
+  text-align: center;
   margin-top: var(--mds-space-400);
 }
 
-/* Better spacing for flex layouts */
-.mds-flex.scenario-buttons {
-  flex-wrap: wrap;
+/* Responsive design */
+@media (max-width: 1200px) {
+  .main-content {
+    grid-template-columns: 350px 1fr;
+    gap: var(--mds-space-500);
+  }
 }
 
-.mds-flex.scenario-buttons .mds-button {
-  flex: 1;
-  min-width: 140px;
+@media (max-width: 968px) {
+  .main-content {
+    grid-template-columns: 1fr;
+    gap: var(--mds-space-500);
+  }
+  
+  .input-panel.mds-card {
+    position: static;
+  }
+  
+  .chart-container {
+    min-height: 400px;
+  }
+  
+  .chart-container canvas {
+    height: 350px !important;
+  }
 }
 
-/* Improve table input styling */
-.data-table .mds-input {
-  border: 1px solid var(--mds-border-color-default);
-  padding: var(--mds-space-100) var(--mds-space-200);
-  font-size: var(--mds-font-size-sm);
+@media (max-width: 768px) {
+  .header-content {
+    margin: 0 -15px var(--mds-space-500) -15px;
+  }
+  
+  .header-left {
+    padding: 0 var(--mds-space-400);
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: var(--mds-space-300);
+  }
+  
+  .header-text h1 {
+    font-size: 1.75rem;
+  }
+  
+  .main-nav {
+    margin: 0 -15px var(--mds-space-500) -15px;
+    padding: 0 var(--mds-space-400);
+  }
+  
+  .container {
+    padding: 0 var(--mds-space-400);
+  }
+  
+  .stats-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-container {
+    min-height: 300px;
+  }
+  
+  .chart-container canvas {
+    height: 250px !important;
+  }
 }
 
-/* Chart container improvements */
-.chart-container.mds-card {
-  margin-bottom: var(--mds-space-600);
+/* Scenario section improvements */
+.scenario-section.mds-card {
+  margin-top: var(--mds-space-600);
+  background: rgba(0, 119, 190, 0.02);
+  border: 1px solid rgba(0, 119, 190, 0.1);
 }
 
-/* Stats grid layout improvements */
-.stats-grid {
-  display: grid;
+.scenario-buttons.mds-flex {
   gap: var(--mds-space-300);
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin-bottom: var(--mds-space-400);
 }
 
-/* Equilibrium analysis grid */
+/* Table improvements inspired by internal UI */
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  background: white;
+  border-radius: var(--mds-border-radius-md);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.comparison-table th {
+  background: #f8f9fa;
+  padding: var(--mds-space-300) var(--mds-space-400);
+  font-weight: var(--mds-font-weight-bold);
+  color: var(--mds-color-neutral-strong);
+  border-bottom: 2px solid var(--mds-border-color-default);
+  text-align: left;
+}
+
+.comparison-table td {
+  padding: var(--mds-space-300) var(--mds-space-400);
+  border-bottom: 1px solid var(--mds-border-color-weak);
+}
+
+.comparison-table tbody tr:hover {
+  background: rgba(0, 119, 190, 0.03);
+}
+
+/* Remove old conflicting styles */
 .equilibrium-analysis {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -569,94 +809,12 @@ canvas#costDistributionChart {
   margin-top: var(--mds-space-600);
 }
 
-/* Navigation improvements */
-.main-nav {
-  margin-bottom: var(--mds-space-600);
-}
-
-.main-nav a {
-  transition: color var(--mds-transition-fast);
-  color: var(--mds-text-color-secondary);
-  padding: var(--mds-space-200) var(--mds-space-400);
-  border-radius: var(--mds-border-radius-md);
-  text-decoration: none;
-  margin-right: var(--mds-space-200);
-}
-
-.main-nav a:hover {
-  color: var(--mds-color-primary);
-  background-color: var(--mds-background-color-primary-weak);
-}
-
-.main-nav a.active {
-  color: var(--mds-color-primary);
-  background-color: var(--mds-background-color-primary-weak);
-  font-weight: var(--mds-font-weight-medium);
-}
-
 /* Helper text improvements */
 .input-helper.mds-text-sm {
   display: block;
   margin-top: var(--mds-space-100);
   color: var(--mds-text-color-secondary);
-}
-
-/* Responsive flexbox improvements */
-@media (max-width: 768px) {
-  .header-content {
-    flex-direction: column;
-    align-items: flex-start !important;
-    gap: var(--mds-space-300);
-  }
-  
-  .header-left {
-    flex-direction: column;
-    align-items: flex-start !important;
-    width: 100%;
-  }
-  
-  .maersk-logo {
-    height: 28px;
-  }
-  
-  .mds-flex.supply-inputs,
-  .mds-flex.baseline-inputs,
-  .mds-flex.option-inputs {
-    flex-direction: column;
-  }
-  
-  .mds-flex.scenario-buttons {
-    flex-direction: column;
-  }
-  
-  .equilibrium-analysis {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Form layout improvements for narrow screens */
-@media (max-width: 576px) {
-  .mds-flex.mds-gap-sm > .mds-button {
-    margin-top: var(--mds-space-200);
-  }
-  
-  .option-inputs.mds-flex {
-    gap: var(--mds-space-400);
-  }
-}
-
-/* Improve visual hierarchy */
-.mds-card + .mds-card {
-  margin-top: var(--mds-space-500);
-}
-
-/* Status-aware styling for equilibrium values */
-.eq-value.positive {
-  color: var(--mds-color-success);
-}
-
-.eq-value.negative {
-  color: var(--mds-color-error);
+  font-style: italic;
 }
 
 /* Focus states for better accessibility */
@@ -677,97 +835,256 @@ canvas#costDistributionChart {
   color: var(--mds-color-primary);
   cursor: help;
   transition: color var(--mds-transition-fast);
+  margin-left: var(--mds-space-100);
 }
 
 .info-icon:hover {
   color: var(--mds-color-maersk-dark-blue);
 }
 
-/* Table styling improvements */
+/* Status-aware styling for equilibrium values */
+.eq-value.positive {
+  color: var(--mds-color-success);
+  font-weight: var(--mds-font-weight-bold);
+}
+
+.eq-value.negative {
+  color: var(--mds-color-error);
+  font-weight: var(--mds-font-weight-bold);
+}
+
+/* Ensure proper text contrast */
+.mds-text-secondary {
+  color: #495057 !important;
+}
+
+/* Data table styling improvements inspired by internal UI */
 .data-table {
   border-collapse: collapse;
   width: 100%;
   border: 1px solid var(--mds-border-color-default);
   border-radius: var(--mds-border-radius-md);
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background: white;
 }
 
 .data-table th {
-  background-color: var(--mds-background-color-neutral-weak);
-  padding: var(--mds-space-300);
+  background: #f8f9fa;
+  padding: var(--mds-space-300) var(--mds-space-400);
+  font-weight: var(--mds-font-weight-bold);
+  color: var(--mds-color-neutral-strong);
+  border-bottom: 2px solid var(--mds-border-color-default);
   text-align: left;
-  font-weight: var(--mds-font-weight-medium);
-  border-bottom: 1px solid var(--mds-border-color-default);
+  font-size: 0.9rem;
 }
 
 .data-table td {
+  padding: var(--mds-space-300) var(--mds-space-400);
+  border-bottom: 1px solid var(--mds-border-color-weak);
+  vertical-align: middle;
+}
+
+.data-table tbody tr:hover {
+  background: rgba(0, 119, 190, 0.03);
+}
+
+.data-table .mds-input {
+  border: 1px solid var(--mds-border-color-default);
   padding: var(--mds-space-200);
+  font-size: 0.9rem;
+  margin: 0;
+  width: 100%;
+}
+
+.data-table .mds-button {
+  padding: var(--mds-space-150) var(--mds-space-300);
+  font-size: 0.85rem;
+}
+
+/* Option pricing page specific styling */
+.option-time-series.mds-card,
+.option-pricing-ui.mds-card {
+  margin-bottom: var(--mds-space-600);
+}
+
+.time-series-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: var(--mds-space-400);
+  border: 1px solid var(--mds-border-color-default);
+  border-radius: var(--mds-border-radius-md);
+  overflow: hidden;
+  background: white;
+}
+
+.time-series-table th {
+  background: #f8f9fa;
+  padding: var(--mds-space-300) var(--mds-space-400);
+  font-weight: var(--mds-font-weight-bold);
+  color: var(--mds-color-neutral-strong);
+  border-bottom: 2px solid var(--mds-border-color-default);
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.time-series-table td {
+  padding: var(--mds-space-300) var(--mds-space-400);
+  border-bottom: 1px solid var(--mds-border-color-weak);
+  text-align: right;
+}
+
+.time-series-table tbody tr:hover {
+  background: rgba(0, 119, 190, 0.03);
+}
+
+/* Demand analysis page specific styling */
+.demand-analysis-ui.mds-card {
+  margin-bottom: var(--mds-space-700);
+}
+
+.supply-inputs.mds-flex,
+.baseline-inputs.mds-flex {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--mds-space-400);
+}
+
+.demand-chart-container.mds-card {
+  margin-bottom: var(--mds-space-600);
+  min-height: 600px;
+}
+
+.demand-chart-container canvas {
+  height: 500px !important;
+}
+
+/* Chart container title styling */
+.chart-container::before {
+  content: attr(data-title);
+  display: block;
+  padding: var(--mds-space-400) var(--mds-space-500) 0;
+  font-weight: var(--mds-font-weight-bold);
+  color: var(--mds-color-neutral-strong);
+  font-size: 1.1rem;
+}
+
+/* Improve scenario controls styling */
+.import-scenario-controls.mds-flex {
+  background: rgba(0, 119, 190, 0.05);
+  padding: var(--mds-space-400);
+  border-radius: var(--mds-border-radius-md);
+  border: 1px solid rgba(0, 119, 190, 0.1);
+  align-items: flex-end;
+}
+
+.import-scenario-controls .mds-input {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* Stats grid improvements */
+.stats-grid {
+  display: grid;
+  gap: var(--mds-space-300);
+  grid-template-columns: 1fr;
+}
+
+.stats-grid > div {
+  padding: var(--mds-space-300);
+  background: rgba(0, 119, 190, 0.02);
+  border-radius: var(--mds-border-radius-md);
+  border: 1px solid rgba(0, 119, 190, 0.1);
+}
+
+.stats-grid .stat-label {
+  font-weight: var(--mds-font-weight-medium);
+  color: var(--mds-color-neutral-strong);
+  font-size: 0.9rem;
+  margin-bottom: var(--mds-space-100);
+}
+
+.stats-grid .stat-value {
+  font-size: 1.2rem;
+  font-weight: var(--mds-font-weight-bold);
+  color: var(--mds-color-primary);
+}
+
+/* Equilibrium analysis improvements */
+.eq-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--mds-space-200) 0;
   border-bottom: 1px solid var(--mds-border-color-weak);
 }
 
-/* Improved visual feedback for interactive elements */
-.mds-card:hover {
-  transform: translateY(-1px);
-  transition: transform var(--mds-transition-fast), box-shadow var(--mds-transition-fast);
+.eq-item:last-child {
+  border-bottom: none;
 }
 
-/* Better spacing for nested cards */
-.mds-card .mds-card {
-  box-shadow: var(--mds-shadow-sm);
-  border: 1px solid var(--mds-border-color-weak);
-} 
-
-/* Ensure proper text contrast */
-.mds-text-secondary {
-  color: #495057 !important; /* Ensure good contrast */
+.eq-label {
+  font-weight: var(--mds-font-weight-medium);
+  color: var(--mds-color-neutral-strong);
 }
 
-/* Chart responsiveness */
+.eq-value {
+  font-weight: var(--mds-font-weight-bold);
+  font-size: 1.1rem;
+}
+
+/* Add row button styling */
+.add-row-btn {
+  margin-top: var(--mds-space-300);
+  width: 100%;
+}
+
+/* Market summary content styling */
+#marketSummaryContent p {
+  margin-bottom: var(--mds-space-300);
+  line-height: var(--mds-line-height-relaxed);
+}
+
+#marketSummaryContent strong {
+  color: var(--mds-color-primary);
+}
+
+/* Option results styling */
+.option-results.mds-card {
+  margin-top: var(--mds-space-500);
+}
+
+#optionPayoffStats {
+  margin-bottom: var(--mds-space-400);
+  padding: var(--mds-space-400);
+  background: rgba(0, 119, 190, 0.02);
+  border-radius: var(--mds-border-radius-md);
+  border: 1px solid rgba(0, 119, 190, 0.1);
+}
+
+/* Responsive improvements for option pricing flex layout */
 @media (max-width: 768px) {
-  .chart-container {
-    min-height: 300px;
+  .option-inputs.mds-flex {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--mds-space-400);
   }
   
-  .chart-container.mds-card .mds-card__body {
-    padding: var(--mds-space-200);
-    min-height: 250px;
+  .supply-inputs.mds-flex,
+  .baseline-inputs.mds-flex {
+    grid-template-columns: 1fr;
   }
-} 
-
-/* Debug and loading improvements */
-.debug-info {
-  padding: var(--mds-space-200);
-  background-color: var(--mds-background-color-primary-weak);
-  border-radius: var(--mds-border-radius-md);
-  border: 1px solid var(--mds-border-color-primary);
-}
-
-/* Ensure charts are always visible */
-.chart-container.mds-card {
-  background: white;
-  border: 2px solid var(--mds-border-color-default);
-}
-
-/* Chart placeholder styling */
-.chart-container canvas {
-  background: white !important;
-  border: 1px solid var(--mds-border-color-weak);
-  border-radius: var(--mds-border-radius-md);
-}
-
-/* Button enhancement */
-.mds-button.run-btn {
-  background: linear-gradient(135deg, var(--mds-color-primary), var(--mds-color-maersk-dark-blue));
-  border: none;
-  box-shadow: var(--mds-shadow-md);
-  font-size: var(--mds-font-size-lg);
-  font-weight: var(--mds-font-weight-bold);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.mds-button.run-btn:hover {
-  background: linear-gradient(135deg, var(--mds-color-maersk-dark-blue), var(--mds-color-primary));
-  box-shadow: var(--mds-shadow-lg);
-  transform: translateY(-2px);
+  
+  .import-scenario-controls.mds-flex {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .demand-chart-container.mds-card {
+    min-height: 400px;
+  }
+  
+  .demand-chart-container canvas {
+    height: 350px !important;
+  }
 } 
