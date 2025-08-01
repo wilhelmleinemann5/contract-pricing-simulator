@@ -1,4 +1,4 @@
-// Chart.js Dark Theme Configuration - AGGRESSIVE OVERRIDE
+// Chart.js Dark Theme Configuration - SUPER AGGRESSIVE OVERRIDE
 // Automatically applies Maersk dark theme colors to all charts
 
 class ChartTheme {
@@ -12,47 +12,61 @@ class ChartTheme {
             maerskBlue: '#0077BE',
             maerskLightBlue: '#4A9FD9',
             maerskAccentBlue: '#00A8E6',
+            maerskDarkBlue: '#003F5C',
             success: '#22c55e',
             error: '#ef4444',
             warning: '#f59e0b',
             neutral: '#6b7785'
         };
 
+        // ONLY MAERSK BLUE PALETTE - NO GREEN/ORANGE
         this.defaultDatasetColors = [
             {
                 backgroundColor: 'rgba(0, 119, 190, 0.8)',
                 borderColor: '#0077BE',
-                borderWidth: 3
+                borderWidth: 3,
+                pointBackgroundColor: '#0077BE',
+                pointBorderColor: '#0077BE',
             },
             {
                 backgroundColor: 'rgba(74, 159, 217, 0.8)',
                 borderColor: '#4A9FD9',
-                borderWidth: 3
+                borderWidth: 3,
+                pointBackgroundColor: '#4A9FD9',
+                pointBorderColor: '#4A9FD9',
             },
             {
                 backgroundColor: 'rgba(0, 168, 230, 0.8)',
                 borderColor: '#00A8E6',
-                borderWidth: 3
+                borderWidth: 3,
+                pointBackgroundColor: '#00A8E6',
+                pointBorderColor: '#00A8E6',
             },
             {
-                backgroundColor: 'rgba(34, 197, 94, 0.8)',
-                borderColor: '#22c55e',
-                borderWidth: 3
+                backgroundColor: 'rgba(0, 63, 92, 0.8)',
+                borderColor: '#003F5C',
+                borderWidth: 3,
+                pointBackgroundColor: '#003F5C',
+                pointBorderColor: '#003F5C',
             },
             {
-                backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                borderColor: '#ef4444',
-                borderWidth: 3
+                backgroundColor: 'rgba(102, 178, 255, 0.8)',
+                borderColor: '#66B2FF',
+                borderWidth: 3,
+                pointBackgroundColor: '#66B2FF',
+                pointBorderColor: '#66B2FF',
             },
             {
-                backgroundColor: 'rgba(245, 158, 11, 0.8)',
-                borderColor: '#f59e0b',
-                borderWidth: 3
+                backgroundColor: 'rgba(26, 115, 232, 0.8)',
+                borderColor: '#1A73E8',
+                borderWidth: 3,
+                pointBackgroundColor: '#1A73E8',
+                pointBorderColor: '#1A73E8',
             }
         ];
     }
 
-    // Apply dark theme to Chart.js default config - AGGRESSIVE
+    // Apply dark theme to Chart.js default config - SUPER AGGRESSIVE
     applyGlobalDefaults() {
         if (typeof Chart !== 'undefined') {
             // Force global chart defaults
@@ -113,13 +127,13 @@ class ChartTheme {
         }
     }
 
-    // Force Maersk colors on existing charts
+    // Force Maersk colors on existing charts - ULTRA AGGRESSIVE
     forceChartUpdate() {
-        if (typeof Chart !== 'undefined') {
+        if (typeof Chart !== 'undefined' && Chart.instances) {
             Chart.instances.forEach((chartInstance) => {
                 if (chartInstance && chartInstance.data && chartInstance.data.datasets) {
                     // Apply Maersk colors to datasets
-                    chartInstance.data.datasets = this.applyDatasetColors(chartInstance.data.datasets);
+                    chartInstance.data.datasets = this.applyDatasetColors(chartInstance.data.datasets, true);
                     
                     // Force chart options update
                     chartInstance.options = this.getChartOptions(chartInstance.options);
@@ -240,39 +254,58 @@ class ChartTheme {
         return this.mergeDeep(defaultOptions, customOptions);
     }
 
-    // Apply Maersk colors to datasets - FORCE BRANDING
-    applyDatasetColors(datasets, colorScheme = 'maersk') {
+    // Apply ONLY MAERSK COLORS - FORCE BRANDING, NO GREEN/ORANGE
+    applyDatasetColors(datasets, forceUpdate = false) {
         return datasets.map((dataset, index) => {
             const colorIndex = index % this.defaultDatasetColors.length;
             const colors = this.defaultDatasetColors[colorIndex];
             
-            // Force Maersk colors regardless of existing colors
+            // FORCE Maersk colors regardless of existing colors, especially for histograms
             const updatedDataset = {
                 ...dataset,
                 backgroundColor: colors.backgroundColor,
                 borderColor: colors.borderColor,
                 borderWidth: colors.borderWidth,
-                pointBackgroundColor: colors.borderColor,
-                pointBorderColor: colors.borderColor,
+                pointBackgroundColor: colors.pointBackgroundColor,
+                pointBorderColor: colors.pointBorderColor,
                 pointBorderWidth: 2,
                 pointRadius: 4,
                 pointHoverRadius: 6,
                 tension: 0.2
             };
 
-            // Special handling for specific chart types
-            if (dataset.label?.toLowerCase().includes('percentile')) {
-                updatedDataset.backgroundColor = 'rgba(0, 119, 190, 0.1)';
+            // Special handling for different chart types - ALL MAERSK BLUES
+            if (dataset.type === 'bar' || dataset.label?.toLowerCase().includes('distribution') || dataset.label?.toLowerCase().includes('histogram')) {
+                // For bar charts/histograms - use Maersk blue variations
+                if (dataset.label?.toLowerCase().includes('contract') || dataset.label?.toLowerCase().includes('favor')) {
+                    updatedDataset.backgroundColor = '#0077BE';
+                    updatedDataset.borderColor = '#003F5C';
+                } else {
+                    updatedDataset.backgroundColor = '#4A9FD9';
+                    updatedDataset.borderColor = '#0077BE';
+                }
+                updatedDataset.borderWidth = 2;
+            }
+
+            if (dataset.label?.toLowerCase().includes('percentile') || dataset.label?.toLowerCase().includes('confidence')) {
+                updatedDataset.backgroundColor = 'rgba(0, 119, 190, 0.15)';
                 updatedDataset.borderColor = '#0077BE';
                 updatedDataset.borderWidth = 1;
                 updatedDataset.pointRadius = 0;
+                updatedDataset.fill = true;
             }
             
-            if (dataset.label?.toLowerCase().includes('mean')) {
-                updatedDataset.backgroundColor = 'rgba(0, 119, 190, 0.8)';
+            if (dataset.label?.toLowerCase().includes('mean') || dataset.label?.toLowerCase().includes('average')) {
+                updatedDataset.backgroundColor = 'rgba(0, 119, 190, 0.9)';
                 updatedDataset.borderColor = '#0077BE';
                 updatedDataset.borderWidth = 4;
                 updatedDataset.pointRadius = 5;
+            }
+
+            if (dataset.label?.toLowerCase().includes('spot') || dataset.label?.toLowerCase().includes('price')) {
+                updatedDataset.backgroundColor = 'rgba(74, 159, 217, 0.8)';
+                updatedDataset.borderColor = '#4A9FD9';
+                updatedDataset.borderWidth = 3;
             }
 
             if (dataset.label?.toLowerCase().includes('contract')) {
@@ -280,12 +313,26 @@ class ChartTheme {
                 updatedDataset.borderColor = '#00A8E6';
                 updatedDataset.borderWidth = 3;
             }
+
+            // FORCE override any remaining green/orange colors
+            if (updatedDataset.backgroundColor?.includes('green') || 
+                updatedDataset.backgroundColor?.includes('#22c55e') ||
+                updatedDataset.backgroundColor?.includes('#f59e0b') ||
+                updatedDataset.backgroundColor?.includes('orange') ||
+                updatedDataset.borderColor?.includes('green') ||
+                updatedDataset.borderColor?.includes('#22c55e') ||
+                updatedDataset.borderColor?.includes('#f59e0b') ||
+                updatedDataset.borderColor?.includes('orange')) {
+                
+                updatedDataset.backgroundColor = colors.backgroundColor;
+                updatedDataset.borderColor = colors.borderColor;
+            }
             
             return updatedDataset;
         });
     }
 
-    // Create a chart with dark theme applied - FORCED
+    // Create a chart with dark theme applied - SUPER FORCED
     createChart(ctx, config) {
         // Force canvas background
         if (ctx && ctx.canvas) {
@@ -295,9 +342,9 @@ class ChartTheme {
         // Apply dark theme options
         config.options = this.getChartOptions(config.options || {});
         
-        // Apply Maersk colors to datasets
+        // Apply ONLY Maersk colors to datasets
         if (config.data && config.data.datasets) {
-            config.data.datasets = this.applyDatasetColors(config.data.datasets);
+            config.data.datasets = this.applyDatasetColors(config.data.datasets, true);
         }
 
         const chart = new Chart(ctx, config);
@@ -306,6 +353,12 @@ class ChartTheme {
         setTimeout(() => {
             if (chart && chart.canvas) {
                 chart.canvas.style.backgroundColor = this.colors.background;
+                
+                // Force re-apply colors one more time
+                if (chart.data && chart.data.datasets) {
+                    chart.data.datasets = this.applyDatasetColors(chart.data.datasets, true);
+                }
+                
                 chart.update('none');
             }
         }, 100);
@@ -344,19 +397,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof Chart !== 'undefined') {
         window.chartTheme.applyGlobalDefaults();
         
-        // Force update existing charts every 2 seconds for the first 10 seconds
+        // Force update existing charts every second for the first 15 seconds - MORE AGGRESSIVE
         let attempts = 0;
         const forceUpdate = setInterval(() => {
             window.chartTheme.forceChartUpdate();
             attempts++;
-            if (attempts >= 5) {
+            if (attempts >= 15) {
                 clearInterval(forceUpdate);
             }
-        }, 2000);
+        }, 1000);
     }
 });
 
-// Override Chart constructor to force dark theme
+// Override Chart constructor to force dark theme - SUPER AGGRESSIVE
 if (typeof Chart !== 'undefined') {
     const originalChart = Chart;
     window.Chart = function(ctx, config) {
@@ -368,5 +421,14 @@ if (typeof Chart !== 'undefined') {
         window.Chart[key] = originalChart[key];
     });
 }
+
+// Additional force update on window load
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        if (window.chartTheme) {
+            window.chartTheme.forceChartUpdate();
+        }
+    }, 2000);
+});
 
 export default ChartTheme; 
