@@ -447,6 +447,79 @@ Based on MDS v2 design tokens and foundations
    APPLICATION-SPECIFIC INTEGRATION STYLES
    ========================================================================== */
 
+/* Header with Maersk logo styling */
+.header-content {
+  padding: var(--mds-space-400) 0;
+  border-bottom: 1px solid var(--mds-border-color-weak);
+  margin-bottom: var(--mds-space-600);
+}
+
+.maersk-logo {
+  height: 32px;
+  width: auto;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.header-text h1 {
+  color: var(--mds-color-primary);
+  font-weight: var(--mds-font-weight-bold);
+}
+
+.header-text p {
+  color: var(--mds-color-neutral-weak);
+  margin-top: var(--mds-space-100);
+}
+
+/* Improve color contrast for better readability */
+:root {
+  /* Enhanced color contrast */
+  --mds-text-color-secondary: #495057; /* Darker gray for better contrast */
+  --mds-border-color-default: #DEE2E6; /* Lighter border for better separation */
+  --mds-background-color-neutral-weak: #F8F9FA; /* Slightly more contrast */
+}
+
+/* Chart container improvements - ensure charts are visible */
+.chart-container {
+  min-height: 400px;
+  background: var(--mds-background-color-default);
+  border-radius: var(--mds-border-radius-lg);
+  overflow: hidden;
+}
+
+.chart-container canvas {
+  max-width: 100%;
+  height: auto !important;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Ensure Chart.js canvas is properly sized */
+.chart-container.mds-card .mds-card__body {
+  padding: var(--mds-space-400);
+  min-height: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Fix chart loading issues */
+canvas#priceChart,
+canvas#costDistributionChart {
+  background-color: transparent !important;
+  border-radius: var(--mds-border-radius-md);
+}
+
+/* Loading state for charts */
+.chart-container:empty::before {
+  content: "Loading chart...";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: var(--mds-text-color-secondary);
+  font-style: italic;
+}
+
 /* Make MDS inputs work with existing input-group layout */
 .input-group .mds-input {
   margin-bottom: var(--mds-space-100);
@@ -481,10 +554,6 @@ Based on MDS v2 design tokens and foundations
   margin-bottom: var(--mds-space-600);
 }
 
-.chart-container.mds-card .mds-card__body {
-  padding: var(--mds-space-300);
-}
-
 /* Stats grid layout improvements */
 .stats-grid {
   display: grid;
@@ -501,22 +570,55 @@ Based on MDS v2 design tokens and foundations
 }
 
 /* Navigation improvements */
+.main-nav {
+  margin-bottom: var(--mds-space-600);
+}
+
 .main-nav a {
   transition: color var(--mds-transition-fast);
+  color: var(--mds-text-color-secondary);
+  padding: var(--mds-space-200) var(--mds-space-400);
+  border-radius: var(--mds-border-radius-md);
+  text-decoration: none;
+  margin-right: var(--mds-space-200);
 }
 
 .main-nav a:hover {
   color: var(--mds-color-primary);
+  background-color: var(--mds-background-color-primary-weak);
+}
+
+.main-nav a.active {
+  color: var(--mds-color-primary);
+  background-color: var(--mds-background-color-primary-weak);
+  font-weight: var(--mds-font-weight-medium);
 }
 
 /* Helper text improvements */
 .input-helper.mds-text-sm {
   display: block;
   margin-top: var(--mds-space-100);
+  color: var(--mds-text-color-secondary);
 }
 
 /* Responsive flexbox improvements */
 @media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: var(--mds-space-300);
+  }
+  
+  .header-left {
+    flex-direction: column;
+    align-items: flex-start !important;
+    width: 100%;
+  }
+  
+  .maersk-logo {
+    height: 28px;
+  }
+  
   .mds-flex.supply-inputs,
   .mds-flex.baseline-inputs,
   .mds-flex.option-inputs {
@@ -613,4 +715,59 @@ Based on MDS v2 design tokens and foundations
 .mds-card .mds-card {
   box-shadow: var(--mds-shadow-sm);
   border: 1px solid var(--mds-border-color-weak);
+} 
+
+/* Ensure proper text contrast */
+.mds-text-secondary {
+  color: #495057 !important; /* Ensure good contrast */
+}
+
+/* Chart responsiveness */
+@media (max-width: 768px) {
+  .chart-container {
+    min-height: 300px;
+  }
+  
+  .chart-container.mds-card .mds-card__body {
+    padding: var(--mds-space-200);
+    min-height: 250px;
+  }
+} 
+
+/* Debug and loading improvements */
+.debug-info {
+  padding: var(--mds-space-200);
+  background-color: var(--mds-background-color-primary-weak);
+  border-radius: var(--mds-border-radius-md);
+  border: 1px solid var(--mds-border-color-primary);
+}
+
+/* Ensure charts are always visible */
+.chart-container.mds-card {
+  background: white;
+  border: 2px solid var(--mds-border-color-default);
+}
+
+/* Chart placeholder styling */
+.chart-container canvas {
+  background: white !important;
+  border: 1px solid var(--mds-border-color-weak);
+  border-radius: var(--mds-border-radius-md);
+}
+
+/* Button enhancement */
+.mds-button.run-btn {
+  background: linear-gradient(135deg, var(--mds-color-primary), var(--mds-color-maersk-dark-blue));
+  border: none;
+  box-shadow: var(--mds-shadow-md);
+  font-size: var(--mds-font-size-lg);
+  font-weight: var(--mds-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mds-button.run-btn:hover {
+  background: linear-gradient(135deg, var(--mds-color-maersk-dark-blue), var(--mds-color-primary));
+  box-shadow: var(--mds-shadow-lg);
+  transform: translateY(-2px);
 } 
