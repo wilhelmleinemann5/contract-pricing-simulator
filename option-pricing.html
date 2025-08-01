@@ -9,12 +9,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="mds/css/mds-integration.css">
 </head>
-<body>
+<body class="mds">
   <div class="container">
     <header>
-      <h1>Option Pricing</h1>
-      <p>Analyze and price call/put-like instruments on simulated contract rates</p>
+      <h1 class="mds-headline-lg mds-text-primary">Option Pricing</h1>
+      <p class="mds-text-lg mds-text-secondary">Analyze and price call/put-like instruments on simulated contract rates</p>
     </header>
     <nav class="main-nav">
       <a href="index.html">Main Simulator</a>
@@ -23,102 +24,124 @@
     </nav>
     <main>
       <!-- Option Value Over Time Section - Moved to top -->
-      <section class="option-time-series">
-        <h2>Option Value Over Time 
-          <span class="info-icon" tabindex="0" aria-label="Time series overview" data-tooltip="See how call option values change week by week. This uses at-the-money strikes and helps you understand when options are most valuable. Higher volatility increases option premiums, especially in later weeks.">ℹ️</span>
-        </h2>
-        <p class="section-description">
-          This analysis shows how call option values evolve over your 13-week contract period. It uses at-the-money strikes (strike = expected spot price) to show intrinsic option value patterns. Use this to optimize your contract timing strategy.
-        </p>
-        <div class="import-scenario-controls">
-          <select id="savedScenarioSelect" class="scenario-select">
-            <option value="">-- Select Scenario to Import --</option>
-          </select>
-          <button type="button" id="importParams" class="import-btn">Import Selected Scenario</button>
+      <section class="option-time-series mds-card">
+        <div class="mds-card__header">
+          <h2 class="mds-headline-sm mds-m-0">Option Value Over Time 
+            <span class="info-icon" tabindex="0" aria-label="Time series overview" data-tooltip="See how call option values change week by week. This uses at-the-money strikes and helps you understand when options are most valuable. Higher volatility increases option premiums, especially in later weeks.">ℹ️</span>
+          </h2>
+          <p class="mds-text-md mds-text-secondary">
+            This analysis shows how call option values evolve over your 13-week contract period. It uses at-the-money strikes (strike = expected spot price) to show intrinsic option value patterns. Use this to optimize your contract timing strategy.
+          </p>
         </div>
-        <div class="option-params-card" id="optionParamsCard">
-          <!-- Simulation parameters summary will be rendered here by JS -->
-        </div>
-        <div class="time-series-chart">
-          <canvas id="optionTimeSeriesChart" width="800" height="400"></canvas>
-        </div>
-        <div class="time-series-table-container">
-          <table id="optionTimeSeriesTable" class="time-series-table">
-            <thead>
-              <tr>
-                <th>Week</th>
-                <th>Mean Spot Price 
-                  <span class="info-icon" tabindex="0" aria-label="Mean spot price info" data-tooltip="Expected market price at this week from your simulation. This becomes the strike price for at-the-money options.">ℹ️</span>
-                </th>
-                <th>Strike (ATM)
-                  <span class="info-icon" tabindex="0" aria-label="ATM strike info" data-tooltip="At-the-money strike equals the expected spot price. These options are most sensitive to market movements and represent fair value.">ℹ️</span>
-                </th>
-                <th>Call Value ($)
-                  <span class="info-icon" tabindex="0" aria-label="Call value info" data-tooltip="Expected payoff in dollars. Higher values indicate more profitable call options. Compare across weeks to find optimal timing.">ℹ️</span>
-                </th>
-                <th>Call Value (%)
-                  <span class="info-icon" tabindex="0" aria-label="Call percentage info" data-tooltip="Option value as percentage of initial spot price. Makes it easier to compare relative value across different price levels.">ℹ️</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody id="optionTimeSeriesTableBody">
-              <tr>
-                <td colspan="5" style="text-align: center; padding: 20px; font-style: italic; color: #6c757d;">
-                  Calculating option values over time...
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="mds-card__body">
+          <div class="import-scenario-controls mds-flex mds-gap-sm mds-mb-md">
+            <select id="savedScenarioSelect" class="scenario-select mds-input">
+              <option value="">-- Select Scenario to Import --</option>
+            </select>
+            <button type="button" id="importParams" class="import-btn mds-button mds-button--primary">Import Selected Scenario</button>
+          </div>
+          <div class="option-params-card mds-card mds-bg-neutral-weak" id="optionParamsCard">
+            <!-- Simulation parameters summary will be rendered here by JS -->
+          </div>
+          <div class="time-series-chart mds-m-md">
+            <canvas id="optionTimeSeriesChart" width="800" height="400"></canvas>
+          </div>
+          <div class="time-series-table-container">
+            <table id="optionTimeSeriesTable" class="time-series-table">
+              <thead>
+                <tr>
+                  <th>Week</th>
+                  <th>Mean Spot Price 
+                    <span class="info-icon" tabindex="0" aria-label="Mean spot price info" data-tooltip="Expected market price at this week from your simulation. This becomes the strike price for at-the-money options.">ℹ️</span>
+                  </th>
+                  <th>Strike (ATM)
+                    <span class="info-icon" tabindex="0" aria-label="ATM strike info" data-tooltip="At-the-money strike equals the expected spot price. These options are most sensitive to market movements and represent fair value.">ℹ️</span>
+                  </th>
+                  <th>Call Value ($)
+                    <span class="info-icon" tabindex="0" aria-label="Call value info" data-tooltip="Expected payoff in dollars. Higher values indicate more profitable call options. Compare across weeks to find optimal timing.">ℹ️</span>
+                  </th>
+                  <th>Call Value (%)
+                    <span class="info-icon" tabindex="0" aria-label="Call percentage info" data-tooltip="Option value as percentage of initial spot price. Makes it easier to compare relative value across different price levels.">ℹ️</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="optionTimeSeriesTableBody">
+                <tr>
+                  <td colspan="5" style="text-align: center; padding: 20px; font-style: italic; color: #6c757d;">
+                    Calculating option values over time...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
       <!-- Option Payoff Calculator - Moved to bottom -->
-      <section class="option-pricing-ui">
-        <h2>Option Payoff Calculator 
-          <span class="info-icon" tabindex="0" aria-label="About option payoffs" data-tooltip="Calculate specific option payoffs for any week and strike. Call options profit when rates exceed strike price. Put options profit when rates fall below strike. Use this for detailed 'what-if' analysis.">ℹ️</span>
-        </h2>
-        <p class="section-description">
-          Calculate the expected payoff for a specific option contract. Choose your strike price, option type, and evaluation week to see detailed payoff statistics and distribution.
-        </p>
+      <section class="option-pricing-ui mds-card">
+        <div class="mds-card__header">
+          <h2 class="mds-headline-sm mds-m-0">Option Payoff Calculator 
+            <span class="info-icon" tabindex="0" aria-label="About option payoffs" data-tooltip="Calculate specific option payoffs for any week and strike. Call options profit when rates exceed strike price. Put options profit when rates fall below strike. Use this for detailed 'what-if' analysis.">ℹ️</span>
+          </h2>
+          <p class="mds-text-md mds-text-secondary">
+            Calculate the expected payoff for a specific option contract. Choose your strike price, option type, and evaluation week to see detailed payoff statistics and distribution.
+          </p>
+        </div>
+        <div class="mds-card__body">
         
         <!-- Smart Help Container for Strike Price -->
         <div id="strike-help" style="display: none;"></div>
         
         <!-- Inputs -->
-        <div class="option-inputs">
-          <label for="optionWeek">Evaluation Week
-            <span class="info-icon" tabindex="0" aria-label="Week selection strategy" data-tooltip="Earlier weeks (1-4): Lower uncertainty, smaller payoffs, good for conservative strategies. Middle weeks (5-9): Balanced risk-reward. Later weeks (10-13): Higher volatility, larger potential payoffs, suitable for aggressive bets.">ℹ️</span>
-          </label>
-          <select id="optionWeek"></select>
+        <div class="option-inputs mds-flex mds-gap-md">
+          <div class="input-group">
+            <label for="optionWeek" class="mds-label">Evaluation Week
+              <span class="info-icon" tabindex="0" aria-label="Week selection strategy" data-tooltip="Earlier weeks (1-4): Lower uncertainty, smaller payoffs, good for conservative strategies. Middle weeks (5-9): Balanced risk-reward. Later weeks (10-13): Higher volatility, larger potential payoffs, suitable for aggressive bets.">ℹ️</span>
+            </label>
+            <select id="optionWeek" class="mds-input"></select>
+          </div>
 
-          <label for="optionStrike">Strike Price
-            <span class="info-icon" tabindex="0" aria-label="Strike price strategy" data-tooltip="At-the-money (95-105%): Most sensitive to market moves, fair value pricing. Out-of-the-money (110%+): Cheaper premium, need bigger moves to profit. In-the-money (85-95%): Higher premium, more likely to finish profitable.">ℹ️</span>
-          </label>
-          <input type="number" id="optionStrike" placeholder="e.g. 3500" min="0">
-          <select id="strikeMode">
-            <option value="absolute">Absolute ($)</option>
-            <option value="percent">% of Initial</option>
-          </select>
+          <div class="input-group">
+            <label for="optionStrike" class="mds-label">Strike Price
+              <span class="info-icon" tabindex="0" aria-label="Strike price strategy" data-tooltip="At-the-money (95-105%): Most sensitive to market moves, fair value pricing. Out-of-the-money (110%+): Cheaper premium, need bigger moves to profit. In-the-money (85-95%): Higher premium, more likely to finish profitable.">ℹ️</span>
+            </label>
+            <div class="mds-flex mds-gap-sm">
+              <input type="number" id="optionStrike" placeholder="e.g. 3500" min="0" class="mds-input">
+              <select id="strikeMode" class="mds-input">
+                <option value="absolute">Absolute ($)</option>
+                <option value="percent">% of Initial</option>
+              </select>
+            </div>
+          </div>
 
-          <label for="optionType">Option Type
-            <span class="info-icon" tabindex="0" aria-label="Call vs Put strategy" data-tooltip="Call Options: Profit when market rates rise above strike. Use when you expect rate increases or want upside exposure. Put Options: Profit when rates fall below strike. Use as insurance against rate drops or when expecting market decline.">ℹ️</span>
-          </label>
-          <select id="optionType">
-            <option value="call">Call (Bullish)</option>
-            <option value="put">Put (Bearish)</option>
-          </select>
+          <div class="input-group">
+            <label for="optionType" class="mds-label">Option Type
+              <span class="info-icon" tabindex="0" aria-label="Call vs Put strategy" data-tooltip="Call Options: Profit when market rates rise above strike. Use when you expect rate increases or want upside exposure. Put Options: Profit when rates fall below strike. Use as insurance against rate drops or when expecting market decline.">ℹ️</span>
+            </label>
+            <select id="optionType" class="mds-input">
+              <option value="call">Call (Bullish)</option>
+              <option value="put">Put (Bearish)</option>
+            </select>
+          </div>
 
-          <button id="calculateOption">Calculate Option Payoff</button>
+          <div class="input-group">
+            <button id="calculateOption" class="mds-button mds-button--primary">Calculate Option Payoff</button>
+          </div>
         </div>
         
         <!-- Results -->
-        <div class="option-results">
-          <h3>Payoff Analysis</h3>
-          <div id="optionPayoffStats">
+        <div class="option-results mds-card mds-bg-neutral-weak mds-m-lg">
+          <div class="mds-card__header">
+            <h3 class="mds-headline-xs mds-m-0">Payoff Analysis</h3>
             <span class="info-icon" tabindex="0" aria-label="Payoff statistics explained" data-tooltip="Expected Payoff: Average return across all simulations. Median: Middle value (50th percentile). 5th-95th Percentile: Range covering 90% of likely outcomes. Use these to assess risk vs reward.">ℹ️</span>
           </div>
-          <canvas id="optionPayoffChart" width="600" height="250"></canvas>
-          <button type="button" id="exportOptionCSV" class="export-btn">Export Detailed Results</button>
+          <div class="mds-card__body">
+            <div id="optionPayoffStats">
+            </div>
+            <canvas id="optionPayoffChart" width="600" height="250"></canvas>
+            <button type="button" id="exportOptionCSV" class="export-btn mds-button mds-button--secondary mds-m-md">Export Detailed Results</button>
+          </div>
+        </div>
         </div>
       </section>
     </main>

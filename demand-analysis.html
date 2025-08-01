@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Demand Curve Analysis | Contract Pricing Simulator</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="mds/css/mds-integration.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
+<body class="mds">
     <div class="container">
         <header>
-            <h1>Demand Curve Analysis</h1>
-            <p>Analyze market shocks and demand curve shifts with supply/demand equilibrium</p>
+            <h1 class="mds-headline-lg mds-text-primary">Demand Curve Analysis</h1>
+            <p class="mds-text-lg mds-text-secondary">Supply and demand equilibrium analysis with market shock modeling</p>
         </header>
         <nav class="main-nav">
             <a href="index.html">Main Simulator</a>
@@ -23,181 +24,215 @@
         </nav>
         <main>
             <!-- Market Data Input Section -->
-            <section class="demand-analysis-ui">
-                <h2>Market Data Configuration 
-                    <span class="info-icon" tabindex="0" aria-label="Market data setup" data-tooltip="Enter price and volume data points to analyze how demand curves shift before and after market events. Use actual market data or hypothetical scenarios to understand pricing implications.">ℹ️</span>
-                </h2>
-                <p class="section-description">
-                    Model how demand curves shift after market shocks like booking surges, capacity constraints, or external events. Compare equilibrium prices before and after the shock to optimize your pricing strategy.
-                </p>
+            <section class="demand-analysis-ui mds-card">
+                <div class="mds-card__header">
+                    <h2 class="mds-headline-sm mds-m-0">Market Data Configuration 
+                        <span class="info-icon" tabindex="0" aria-label="Market data setup" data-tooltip="Enter price and volume data points to analyze how demand curves shift before and after market events. Use actual market data or hypothetical scenarios to understand pricing implications.">ℹ️</span>
+                    </h2>
+                    <p class="mds-text-md mds-text-secondary">
+                        Model how demand curves shift after market shocks like booking surges, capacity constraints, or external events. Compare equilibrium prices before and after the shock to optimize your pricing strategy.
+                    </p>
+                </div>
+                <div class="mds-card__body">
                 
                 <!-- Supply Curve Settings -->
-                <div class="supply-curve-controls">
-                    <h3>Supply Curve Configuration</h3>
-                    <div class="supply-inputs">
-                        <div class="input-group">
-                            <label for="supplyCurveType">Supply Model
-                                <span class="info-icon" tabindex="0" aria-label="Supply curve type" data-tooltip="Flat supply assumes unlimited capacity at fixed cost. Sloped supply assumes increasing costs with volume (capacity constraints, overtime, etc.).">ℹ️</span>
-                            </label>
-                            <select id="supplyCurveType">
-                                <option value="flat">Flat (Unlimited Capacity)</option>
-                                <option value="sloped">Sloped (Capacity Constraints)</option>
-                            </select>
-                        </div>
-                        
-                        <div class="input-group">
-                            <label for="supplyPrice">Base Supply Price ($)
-                                <span class="info-icon" tabindex="0" aria-label="Base supply price" data-tooltip="Your minimum acceptable price or marginal cost. This is where your supply curve starts on the price axis.">ℹ️</span>
-                            </label>
-                            <input type="number" id="supplyPrice" value="2000" min="0" step="50">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label for="supplyCapacity">Supply Capacity (FFE)
-                                <span class="info-icon" tabindex="0" aria-label="Supply capacity" data-tooltip="Your maximum capacity constraint. For flat supply, this is the horizontal line level representing your capacity limit (e.g., 2100 FFE for vessel capacity).">ℹ️</span>
-                            </label>
-                            <input type="number" id="supplyCapacity" value="2100" min="0" step="100">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label for="supplySlope" id="supplySlopeLabel" style="display: none;">Supply Slope ($/unit)
-                                <span class="info-icon" tabindex="0" aria-label="Supply slope" data-tooltip="How much your costs increase per additional unit. Higher slopes mean steeper capacity constraints.">ℹ️</span>
-                            </label>
-                            <input type="number" id="supplySlope" value="0.1" min="0" step="0.01" style="display: none;">
+                <div class="supply-curve-controls mds-card mds-bg-neutral-weak mds-m-md">
+                    <div class="mds-card__header">
+                        <h3 class="mds-headline-xs mds-m-0">Supply Curve Configuration</h3>
+                    </div>
+                    <div class="mds-card__body">
+                        <div class="supply-inputs mds-flex mds-gap-md">
+                            <div class="input-group">
+                                <label for="supplyCurveType" class="mds-label">Supply Model
+                                    <span class="info-icon" tabindex="0" aria-label="Supply curve type" data-tooltip="Flat supply assumes unlimited capacity at fixed cost. Sloped supply assumes increasing costs with volume (capacity constraints, overtime, etc.).">ℹ️</span>
+                                </label>
+                                <select id="supplyCurveType" class="mds-input">
+                                    <option value="flat">Flat (Unlimited Capacity)</option>
+                                    <option value="sloped">Sloped (Capacity Constraints)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="supplyPrice" class="mds-label">Base Supply Price ($)
+                                    <span class="info-icon" tabindex="0" aria-label="Base supply price" data-tooltip="Your minimum acceptable price or marginal cost. This is where your supply curve starts on the price axis.">ℹ️</span>
+                                </label>
+                                <input type="number" id="supplyPrice" value="2000" min="0" step="50" class="mds-input">
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="supplyCapacity" class="mds-label">Supply Capacity (FFE)
+                                    <span class="info-icon" tabindex="0" aria-label="Supply capacity" data-tooltip="Your maximum capacity constraint. For flat supply, this is the horizontal line level representing your capacity limit (e.g., 2100 FFE for vessel capacity).">ℹ️</span>
+                                </label>
+                                <input type="number" id="supplyCapacity" value="2100" min="0" step="100" class="mds-input">
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="supplySlope" id="supplySlopeLabel" class="mds-label" style="display: none;">Supply Slope ($/unit)
+                                    <span class="info-icon" tabindex="0" aria-label="Supply slope" data-tooltip="How much your costs increase per additional unit. Higher slopes mean steeper capacity constraints.">ℹ️</span>
+                                </label>
+                                <input type="number" id="supplySlope" value="0.1" min="0" step="0.01" class="mds-input" style="display: none;">
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Before Event Data -->
-                <div class="data-input-section">
-                    <h3>Baseline Market Conditions 
-                        <span class="info-icon" tabindex="0" aria-label="Baseline conditions" data-tooltip="Enter your current market observation and estimate how sensitive customers are to price changes. This creates your baseline demand curve.">ℹ️</span>
-                    </h3>
-                    <div class="baseline-inputs">
-                        <div class="input-group">
-                            <label for="baselinePrice">Current Market Price ($)
-                                <span class="info-icon" tabindex="0" aria-label="Current price" data-tooltip="The price you're currently charging or observing in the market.">ℹ️</span>
-                            </label>
-                            <input type="number" id="baselinePrice" value="2100" min="0" step="50">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label for="baselineVolume">Current Volume (FFE)
-                                <span class="info-icon" tabindex="0" aria-label="Current volume" data-tooltip="The volume you're seeing at the current price point.">ℹ️</span>
-                            </label>
-                            <input type="number" id="baselineVolume" value="2100" min="0" step="100">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label for="priceSensitivity">Customer Price Sensitivity (%)
-                                <span class="info-icon" tabindex="0" aria-label="Price sensitivity" data-tooltip="How much volume changes when you change price by 10%. For example: if you raise price 10% and volume drops 15%, enter 15. Higher numbers mean more price-sensitive customers.">ℹ️</span>
-                            </label>
-                            <input type="number" id="priceSensitivity" value="10" min="1" max="50" step="1">
-                            <span class="input-helper">% volume change for 10% price change</span>
+                <div class="data-input-section mds-card mds-bg-neutral-weak mds-m-md">
+                    <div class="mds-card__header">
+                        <h3 class="mds-headline-xs mds-m-0">Baseline Market Conditions 
+                            <span class="info-icon" tabindex="0" aria-label="Baseline conditions" data-tooltip="Enter your current market observation and estimate how sensitive customers are to price changes. This creates your baseline demand curve.">ℹ️</span>
+                        </h3>
+                    </div>
+                    <div class="mds-card__body">
+                        <div class="baseline-inputs mds-flex mds-gap-md">
+                            <div class="input-group">
+                                <label for="baselinePrice" class="mds-label">Current Market Price ($)
+                                    <span class="info-icon" tabindex="0" aria-label="Current price" data-tooltip="The price you're currently charging or observing in the market.">ℹ️</span>
+                                </label>
+                                <input type="number" id="baselinePrice" value="2100" min="0" step="50" class="mds-input">
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="baselineVolume" class="mds-label">Current Volume (FFE)
+                                    <span class="info-icon" tabindex="0" aria-label="Current volume" data-tooltip="The volume you're seeing at the current price point.">ℹ️</span>
+                                </label>
+                                <input type="number" id="baselineVolume" value="2100" min="0" step="100" class="mds-input">
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="priceSensitivity" class="mds-label">Customer Price Sensitivity (%)
+                                    <span class="info-icon" tabindex="0" aria-label="Price sensitivity" data-tooltip="How much volume changes when you change price by 10%. For example: if you raise price 10% and volume drops 15%, enter 15. Higher numbers mean more price-sensitive customers.">ℹ️</span>
+                                </label>
+                                <input type="number" id="priceSensitivity" value="10" min="1" max="50" step="1" class="mds-input">
+                                <span class="input-helper mds-text-sm mds-text-secondary">% volume change for 10% price change</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- After Event / Shock Data -->
-                <div class="data-input-section">
-                    <h3>After Event / Shock Data 
-                        <span class="info-icon" tabindex="0" aria-label="After event data" data-tooltip="Market data after a shock event (booking surge, capacity loss, external disruption). Include the shock observation plus any new equilibrium points to fit the new demand curve.">ℹ️</span>
-                    </h3>
-                    <div class="data-table-container">
-                        <table id="afterDataTable" class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Price ($)</th>
-                                    <th>Volume (units)</th>
-                                    <th>Shock Point?</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><input type="number" value="2100" min="0"></td>
-                                    <td><input type="number" value="4888" min="0"></td>
-                                    <td><input type="checkbox" checked></td>
-                                    <td><button type="button" class="remove-row-btn">Remove</button></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <button type="button" id="addAfterRow" class="add-row-btn">Add Data Point</button>
+                <div class="data-input-section mds-card mds-bg-neutral-weak mds-m-md">
+                    <div class="mds-card__header">
+                        <h3 class="mds-headline-xs mds-m-0">After Event / Shock Data 
+                            <span class="info-icon" tabindex="0" aria-label="After event data" data-tooltip="Market data after a shock event (booking surge, capacity loss, external disruption). Include the shock observation plus any new equilibrium points to fit the new demand curve.">ℹ️</span>
+                        </h3>
+                    </div>
+                    <div class="mds-card__body">
+                        <div class="data-table-container">
+                            <table id="afterDataTable" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Price ($)</th>
+                                        <th>Volume (units)</th>
+                                        <th>Shock Point?</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><input type="number" value="2100" min="0" class="mds-input"></td>
+                                        <td><input type="number" value="4888" min="0" class="mds-input"></td>
+                                        <td><input type="checkbox" checked></td>
+                                        <td><button type="button" class="remove-row-btn mds-button mds-button--secondary">Remove</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button type="button" id="addAfterRow" class="add-row-btn mds-button mds-button--secondary">Add Data Point</button>
+                        </div>
                     </div>
                 </div>
 
-                <button id="analyzeDemand" class="run-btn">Analyze Demand Curves</button>
+                <button id="analyzeDemand" class="run-btn mds-button mds-button--primary mds-w-full">Analyze Demand Curves</button>
+                </div>
             </section>
 
             <!-- Analysis Results Section -->
             <section class="demand-results">
-                <h2>Market Analysis Results</h2>
+                <h2 class="mds-headline-sm mds-text-primary">Market Analysis Results</h2>
                 
                 <!-- Chart Container -->
-                <div class="demand-chart-container">
-                    <canvas id="demandChart" width="800" height="500"></canvas>
+                <div class="demand-chart-container mds-card">
+                    <div class="mds-card__body">
+                        <canvas id="demandChart" width="800" height="500"></canvas>
+                    </div>
                 </div>
 
                 <!-- Market Summary -->
-                <div class="market-summary">
-                    <h3>Market Impact Summary</h3>
-                    <div id="marketSummaryContent">
-                        <p><em>Run analysis to see market impact summary...</em></p>
+                <div class="market-summary mds-card">
+                    <div class="mds-card__header">
+                        <h3 class="mds-headline-xs mds-m-0">Market Impact Summary</h3>
+                    </div>
+                    <div class="mds-card__body">
+                        <div id="marketSummaryContent">
+                            <p class="mds-text-secondary"><em>Run analysis to see market impact summary...</em></p>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Equilibrium Analysis -->
                 <div class="equilibrium-analysis">
-                    <div class="equilibrium-card">
-                        <h3>Before Event Equilibrium</h3>
-                        <div id="beforeEquilibrium">
-                            <div class="eq-item">
-                                <span class="eq-label">Market Clearing Price:</span>
-                                <span class="eq-value" id="beforePrice">-</span>
-                            </div>
-                            <div class="eq-item">
-                                <span class="eq-label">Market Clearing Volume:</span>
-                                <span class="eq-value" id="beforeVolume">-</span>
-                            </div>
-                            <div class="eq-item">
-                                <span class="eq-label">Demand Curve R²:</span>
-                                <span class="eq-value" id="beforeR2">-</span>
+                    <div class="equilibrium-card mds-card">
+                        <div class="mds-card__header">
+                            <h3 class="mds-headline-xs mds-m-0">Before Event Equilibrium</h3>
+                        </div>
+                        <div class="mds-card__body">
+                            <div id="beforeEquilibrium">
+                                <div class="eq-item">
+                                    <span class="eq-label mds-text-medium">Market Clearing Price:</span>
+                                    <span class="eq-value mds-text-primary" id="beforePrice">-</span>
+                                </div>
+                                <div class="eq-item">
+                                    <span class="eq-label mds-text-medium">Market Clearing Volume:</span>
+                                    <span class="eq-value" id="beforeVolume">-</span>
+                                </div>
+                                <div class="eq-item">
+                                    <span class="eq-label mds-text-medium">Demand Curve R²:</span>
+                                    <span class="eq-value" id="beforeR2">-</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="equilibrium-card">
-                        <h3>After Event Equilibrium</h3>
-                        <div id="afterEquilibrium">
-                            <div class="eq-item">
-                                <span class="eq-label">Market Clearing Price:</span>
-                                <span class="eq-value" id="afterPrice">-</span>
-                            </div>
-                            <div class="eq-item">
-                                <span class="eq-label">Market Clearing Volume:</span>
-                                <span class="eq-value" id="afterVolume">-</span>
-                            </div>
-                            <div class="eq-item">
-                                <span class="eq-label">Demand Curve R²:</span>
-                                <span class="eq-value" id="afterR2">-</span>
+                    <div class="equilibrium-card mds-card">
+                        <div class="mds-card__header">
+                            <h3 class="mds-headline-xs mds-m-0">After Event Equilibrium</h3>
+                        </div>
+                        <div class="mds-card__body">
+                            <div id="afterEquilibrium">
+                                <div class="eq-item">
+                                    <span class="eq-label mds-text-medium">Market Clearing Price:</span>
+                                    <span class="eq-value mds-text-primary" id="afterPrice">-</span>
+                                </div>
+                                <div class="eq-item">
+                                    <span class="eq-label mds-text-medium">Market Clearing Volume:</span>
+                                    <span class="eq-value" id="afterVolume">-</span>
+                                </div>
+                                <div class="eq-item">
+                                    <span class="eq-label mds-text-medium">Demand Curve R²:</span>
+                                    <span class="eq-value" id="afterR2">-</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="equilibrium-card">
-                        <h3>Change Analysis</h3>
-                        <div id="changeAnalysis">
-                            <div class="eq-item">
-                                <span class="eq-label">Price Change:</span>
-                                <span class="eq-value" id="priceChange">-</span>
-                            </div>
-                            <div class="eq-item">
-                                <span class="eq-label">Volume Change:</span>
-                                <span class="eq-value" id="volumeChange">-</span>
-                            </div>
-                            <div class="eq-item">
-                                <span class="eq-label">Uncertainty Change:</span>
-                                <span class="eq-value" id="uncertaintyChange">-</span>
+                    <div class="equilibrium-card mds-card">
+                        <div class="mds-card__header">
+                            <h3 class="mds-headline-xs mds-m-0">Change Analysis</h3>
+                        </div>
+                        <div class="mds-card__body">
+                            <div id="changeAnalysis">
+                                <div class="eq-item">
+                                    <span class="eq-label mds-text-medium">Price Change:</span>
+                                    <span class="eq-value" id="priceChange">-</span>
+                                </div>
+                                <div class="eq-item">
+                                    <span class="eq-label mds-text-medium">Volume Change:</span>
+                                    <span class="eq-value" id="volumeChange">-</span>
+                                </div>
+                                <div class="eq-item">
+                                    <span class="eq-label mds-text-medium">Uncertainty Change:</span>
+                                    <span class="eq-value" id="uncertaintyChange">-</span>
+                                </div>
                             </div>
                         </div>
                     </div>

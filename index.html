@@ -25,12 +25,13 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="mds/css/mds-integration.css">
 </head>
-<body>
+<body class="mds">
     <div class="container">
         <header>
-            <h1>Contract Pricing Simulator</h1>
-            <p>Monte Carlo simulation for spot price evolution vs contract rates</p>
+            <h1 class="mds-headline-lg mds-text-primary">Contract Pricing Simulator</h1>
+            <p class="mds-text-lg mds-text-secondary">Monte Carlo simulation for spot price evolution vs contract rates</p>
         </header>
 
         <nav class="main-nav">
@@ -40,13 +41,16 @@
         </nav>
 
         <div class="main-content">
-            <div class="input-panel">
-                <h2>Simulation Parameters</h2>
+            <div class="input-panel mds-card">
+                <div class="mds-card__header">
+                    <h2 class="mds-headline-sm mds-m-0">Simulation Parameters</h2>
+                </div>
+                <div class="mds-card__body">
                 
                 <!-- Example Scenarios -->
                 <div class="input-group">
-                    <label for="exampleScenarios">Quick Start Examples</label>
-                    <select id="exampleScenarios">
+                    <label for="exampleScenarios" class="mds-label">Quick Start Examples</label>
+                    <select id="exampleScenarios" class="mds-input">
                         <option value="">-- Load Example Scenario --</option>
                         <option value="conservative">📋 Stable Market</option>
                         <option value="volatile">🚀 Uncertain Future Outlook Market Conditions</option>
@@ -57,39 +61,39 @@
                 </div>
 
                 <div class="input-group">
-                    <label for="initialSpot">Starting Market Price ($)</label>
-                    <input type="number" id="initialSpot" value="3000" min="0" step="50" 
+                    <label for="initialSpot" class="mds-label">Starting Market Price ($)</label>
+                    <input type="number" id="initialSpot" value="3000" min="0" step="50" class="mds-input"
                            data-tooltip="Current spot rate for your route. This is your baseline - all forecasts and comparisons are relative to this starting point. Use recent market rates for accuracy.">
                 </div>
 
                 <div class="input-group">
-                    <label for="forecastedRate">13-Week Market Forecast ($)</label>
-                    <input type="number" id="forecastedRate" value="3200" min="0" step="50"
+                    <label for="forecastedRate" class="mds-label">13-Week Market Forecast ($)</label>
+                    <input type="number" id="forecastedRate" value="3200" min="0" step="50" class="mds-input"
                            data-tooltip="Where you expect the market to be in 13 weeks. Higher forecasts favor longer contracts. This drives the 'drift' in price evolution and affects contract premiums significantly.">
-                    <span class="input-helper">Expected market rate 13 weeks from now</span>
+                    <span class="input-helper mds-text-sm mds-text-secondary">Expected market rate 13 weeks from now</span>
                 </div>
 
                 <div class="input-group">
-                    <label for="volumeDiscount">Volume Discount (%)</label>
-                    <input type="number" id="volumeDiscount" value="5" min="0" max="30" step="0.5"
+                    <label for="volumeDiscount" class="mds-label">Volume Discount (%)</label>
+                    <input type="number" id="volumeDiscount" value="5" min="0" max="30" step="0.5" class="mds-input"
                            data-tooltip="Discount for contract volume vs spot rates (typically 2-8%). This reflects economies of scale and relationship pricing. Higher discounts make contracts more attractive vs spot market.">
-                    <small style="color: #6c757d; font-size: 0.8rem;">Discount applied to synthetic contract price</small>
+                    <small class="mds-text-sm mds-text-secondary">Discount applied to synthetic contract price</small>
                 </div>
 
                 <div class="input-group">
-                    <label for="volatility">Weekly Volatility (%)</label>
-                    <input type="number" id="volatility" value="3" min="0" max="20" step="0.1"
+                    <label for="volatility" class="mds-label">Weekly Volatility (%)</label>
+                    <input type="number" id="volatility" value="3" min="0" max="20" step="0.1" class="mds-input"
                            data-tooltip="Market uncertainty per week (1-2% = stable, 3-5% = normal, 6%+ = volatile). Higher volatility increases option values but makes contract pricing more difficult. Use historical data or current market conditions.">
                 </div>
 
                 <div class="input-group">
-                    <label for="weeks">Contract Duration (weeks)</label>
-                    <input type="number" id="weeks" value="13" min="1" max="52" step="1">
+                    <label for="weeks" class="mds-label">Contract Duration (weeks)</label>
+                    <input type="number" id="weeks" value="13" min="1" max="52" step="1" class="mds-input">
                 </div>
 
                 <div class="input-group">
-                    <label for="simulations">Number of Simulations</label>
-                    <select id="simulations">
+                    <label for="simulations" class="mds-label">Number of Simulations</label>
+                    <select id="simulations" class="mds-input">
                         <option value="1000">1,000</option>
                         <option value="5000">5,000</option>
                         <option value="10000" selected>10,000</option>
@@ -97,102 +101,133 @@
                     </select>
                 </div>
 
-                <button id="runSimulation" class="run-btn">Run Simulation</button>
+                <button id="runSimulation" class="run-btn mds-button mds-button--primary mds-w-full">Run Simulation</button>
 
-                <div class="scenario-section">
-                    <h3>Scenario Management</h3>
+                <div class="scenario-section mds-card mds-bg-neutral-weak mds-m-lg">
+                    <div class="mds-card__header">
+                        <h3 class="mds-headline-xs mds-m-0">Scenario Management</h3>
+                    </div>
+                    <div class="mds-card__body">
                     
                     <div class="input-group">
-                        <label for="scenarioName">Scenario Name</label>
-                        <input type="text" id="scenarioName" placeholder="e.g., Current Market Q1">
+                        <label for="scenarioName" class="mds-label">Scenario Name</label>
+                        <input type="text" id="scenarioName" placeholder="e.g., Current Market Q1" class="mds-input">
                     </div>
                     
-                    <div class="scenario-buttons">
-                        <button id="saveScenario" class="scenario-btn save-btn">Save Scenario</button>
-                        <button id="toggleComparison" class="scenario-btn compare-btn">Compare Scenarios</button>
+                    <div class="scenario-buttons mds-flex mds-gap-sm">
+                        <button id="saveScenario" class="scenario-btn save-btn mds-button mds-button--secondary">Save Scenario</button>
+                        <button id="toggleComparison" class="scenario-btn compare-btn mds-button mds-button--secondary">Compare Scenarios</button>
                     </div>
                     
                     <div class="input-group">
-                        <label for="savedScenarios">Load Saved Scenario</label>
-                        <select id="savedScenarios">
-                            <option value="">-- Select Scenario --</option>
-                        </select>
-                        <button id="deleteScenario" class="scenario-btn delete-btn">Delete</button>
+                        <label for="savedScenarios" class="mds-label">Load Saved Scenario</label>
+                        <div class="mds-flex mds-gap-sm">
+                            <select id="savedScenarios" class="mds-input">
+                                <option value="">-- Select Scenario --</option>
+                            </select>
+                            <button id="deleteScenario" class="scenario-btn delete-btn mds-button mds-button--secondary">Delete</button>
+                        </div>
                     </div>
+                    </div>
+                </div>
                 </div>
             </div>
 
             <div class="results-panel">
-                <div class="chart-container">
-                    <canvas id="priceChart"></canvas>
+                <div class="chart-container mds-card">
+                    <div class="mds-card__body">
+                        <canvas id="priceChart"></canvas>
+                    </div>
                 </div>
 
-                <div class="chart-container">
-                    <canvas id="costDistributionChart"></canvas>
+                <div class="chart-container mds-card">
+                    <div class="mds-card__body">
+                        <canvas id="costDistributionChart"></canvas>
+                    </div>
                 </div>
 
                 <div class="stats-container">
-                    <div class="stat-card">
-                        <h3>Final Price Statistics</h3>
-                        <div id="priceStats" class="stats-grid">
-                            <!-- Stats will be populated by JavaScript -->
+                    <div class="stat-card mds-card">
+                        <div class="mds-card__header">
+                            <h3 class="mds-headline-xs mds-m-0">Final Price Statistics</h3>
+                        </div>
+                        <div class="mds-card__body">
+                            <div id="priceStats" class="stats-grid">
+                                <!-- Stats will be populated by JavaScript -->
+                            </div>
                         </div>
                     </div>
 
-                    <div class="stat-card">
-                        <h3>Suggested Contract Rates</h3>
-                        <div id="suggestedRates" class="stats-grid">
-                            <!-- Suggested contract rates will be populated by JavaScript -->
+                    <div class="stat-card mds-card">
+                        <div class="mds-card__header">
+                            <h3 class="mds-headline-xs mds-m-0">Suggested Contract Rates</h3>
+                        </div>
+                        <div class="mds-card__body">
+                            <div id="suggestedRates" class="stats-grid">
+                                <!-- Suggested contract rates will be populated by JavaScript -->
+                            </div>
                         </div>
                     </div>
 
-                    <div class="stat-card">
-                        <h3>Scenario Outcomes</h3>
-                        <div id="riskMetrics" class="stats-grid">
-                            <!-- Risk metrics will be populated by JavaScript -->
+                    <div class="stat-card mds-card">
+                        <div class="mds-card__header">
+                            <h3 class="mds-headline-xs mds-m-0">Scenario Outcomes</h3>
+                        </div>
+                        <div class="mds-card__body">
+                            <div id="riskMetrics" class="stats-grid">
+                                <!-- Risk metrics will be populated by JavaScript -->
+                            </div>
                         </div>
                     </div>
 
-                    <div class="stat-card">
-                        <h3>Total Cost Comparison</h3>
-                        <div id="contractStats" class="stats-grid">
-                            <!-- Contract pricing stats will be populated by JavaScript -->
+                    <div class="stat-card mds-card">
+                        <div class="mds-card__header">
+                            <h3 class="mds-headline-xs mds-m-0">Total Cost Comparison</h3>
+                        </div>
+                        <div class="mds-card__body">
+                            <div id="contractStats" class="stats-grid">
+                                <!-- Contract pricing stats will be populated by JavaScript -->
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="comparisonSection" class="comparison-section hidden">
-            <h2>Scenario Comparison</h2>
-            <div class="comparison-table-container">
-                <table id="comparisonTable" class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th>Scenario</th>
-                            <th>Start Price</th>
-                            <th>13w Forecast</th>
-                            <th>Volatility</th>
-                            <th>Volume Discount</th>
-                            <th>1-Month Rate</th>
-                            <th>3-Month Rate</th>
-                            <th>Rate Difference</th>
-                            <th>Premium %</th>
-                        </tr>
-                    </thead>
-                    <tbody id="comparisonTableBody">
-                        <tr>
-                            <td colspan="9" style="text-align: center; padding: 20px; font-style: italic; color: #6c757d;">
-                                No scenarios saved yet. Save a scenario first!
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div id="comparisonSection" class="comparison-section hidden mds-card">
+            <div class="mds-card__header">
+                <h2 class="mds-headline-sm mds-m-0">Scenario Comparison</h2>
             </div>
-            
-            <!-- Debug information -->
-            <div id="debugInfo" style="margin-top: 10px; font-size: 0.8rem; color: #6c757d;">
-                <p>Debug: <span id="debugScenarioCount">0</span> scenarios in storage</p>
+            <div class="mds-card__body">
+                <div class="comparison-table-container">
+                    <table id="comparisonTable" class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Scenario</th>
+                                <th>Start Price</th>
+                                <th>13w Forecast</th>
+                                <th>Volatility</th>
+                                <th>Volume Discount</th>
+                                <th>1-Month Rate</th>
+                                <th>3-Month Rate</th>
+                                <th>Rate Difference</th>
+                                <th>Premium %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comparisonTableBody">
+                            <tr>
+                                <td colspan="9" style="text-align: center; padding: 20px; font-style: italic; color: #6c757d;">
+                                    No scenarios saved yet. Save a scenario first!
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Debug information -->
+                <div id="debugInfo" class="mds-text-sm mds-text-secondary mds-m-md">
+                    <p>Debug: <span id="debugScenarioCount">0</span> scenarios in storage</p>
+                </div>
             </div>
         </div>
     </div>

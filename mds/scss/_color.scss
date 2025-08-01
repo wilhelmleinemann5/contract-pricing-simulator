@@ -1,0 +1,67 @@
+@import './mixins/_color';
+
+/*
+@description: 
+Color system for the Maersk Design System.
+It includes a set of color appearances and variants that can be used for text, background, borders, and links.
+The color system is designed to be flexible, making it suitable for various design needs.
+It includes a set of predefined colors that can be used throughout the UI.
+*/
+
+$colors: (
+  'neutral': (
+    'default',
+    'weakest',
+    'weak',
+    'strong',
+    'strongest',
+    'inverse',
+    // deprecated
+    'subtle',
+    'alt',
+  ),
+  'primary': (
+    'default',
+    'weak',
+    // deprecated
+    'subtle',
+  ),
+  'secondary': (
+    'default',
+    'weak',
+    // deprecated
+    'subtle',
+  ),
+  'info': (
+    'default',
+    'weak',
+    // deprecated
+    'subtle',
+  ),
+  'error': (
+    'default',
+    'weak',
+    // deprecated
+    'subtle',
+  ),
+  'warning': (
+    'default',
+    'weak',
+    // deprecated
+    'subtle',
+  ),
+  'success': (
+    'default',
+    'weak',
+    // deprecated
+    'subtle',
+  ),
+);
+
+@each $appearance, $variant in $colors {
+  @include mds-generate-color-classes($appearance, $variant, 'text');
+  @include mds-generate-color-classes($appearance, $variant, 'background');
+  @include mds-generate-color-classes($appearance, $variant, 'on-background');
+  @include mds-generate-color-classes($appearance, $variant, 'border');
+  @include mds-generate-link-color-classes($appearance, $variant, 'text');
+}

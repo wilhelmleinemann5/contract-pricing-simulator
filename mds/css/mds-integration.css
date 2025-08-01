@@ -1,0 +1,616 @@
+/* 
+==============================================================
+MAERSK DESIGN SYSTEM INTEGRATION
+==============================================================
+Curated integration of Maersk Design System for Contract Pricing Simulator
+Based on MDS v2 design tokens and foundations
+*/
+
+/* ==========================================================================
+   DESIGN TOKENS - CSS CUSTOM PROPERTIES
+   ========================================================================== */
+
+:root {
+  /* ===== SPACING TOKENS ===== */
+  --mds-space-50: 2px;
+  --mds-space-100: 4px;
+  --mds-space-150: 6px;
+  --mds-space-200: 8px;
+  --mds-space-300: 12px;
+  --mds-space-400: 16px;
+  --mds-space-500: 20px;
+  --mds-space-600: 24px;
+  --mds-space-700: 32px;
+  --mds-space-800: 40px;
+  --mds-space-900: 48px;
+  --mds-space-1000: 64px;
+
+  /* ===== MAERSK BRAND COLORS ===== */
+  --mds-color-maersk-blue: #0077BE;
+  --mds-color-maersk-light-blue: #E5F4FD;
+  --mds-color-maersk-dark-blue: #003F5C;
+  --mds-color-maersk-grey: #6C757D;
+  --mds-color-maersk-light-grey: #F8F9FA;
+  --mds-color-maersk-white: #FFFFFF;
+  --mds-color-maersk-black: #1A1A1A;
+
+  /* ===== SEMANTIC COLORS ===== */
+  --mds-color-primary: var(--mds-color-maersk-blue);
+  --mds-color-primary-weak: var(--mds-color-maersk-light-blue);
+  --mds-color-secondary: var(--mds-color-maersk-grey);
+  --mds-color-secondary-weak: var(--mds-color-maersk-light-grey);
+  
+  /* Neutral Colors */
+  --mds-color-neutral-default: var(--mds-color-maersk-black);
+  --mds-color-neutral-weak: var(--mds-color-maersk-grey);
+  --mds-color-neutral-weakest: var(--mds-color-maersk-light-grey);
+  --mds-color-neutral-strong: var(--mds-color-maersk-dark-blue);
+  --mds-color-neutral-strongest: var(--mds-color-maersk-black);
+  --mds-color-neutral-inverse: var(--mds-color-maersk-white);
+
+  /* Status Colors */
+  --mds-color-success: #28A745;
+  --mds-color-success-weak: #D4EDDA;
+  --mds-color-error: #DC3545;
+  --mds-color-error-weak: #F8D7DA;
+  --mds-color-warning: #FFC107;
+  --mds-color-warning-weak: #FFF3CD;
+  --mds-color-info: var(--mds-color-maersk-blue);
+  --mds-color-info-weak: var(--mds-color-maersk-light-blue);
+
+  /* ===== BACKGROUND COLORS ===== */
+  --mds-background-color-default: var(--mds-color-maersk-white);
+  --mds-background-color-neutral-weak: var(--mds-color-maersk-light-grey);
+  --mds-background-color-primary: var(--mds-color-maersk-blue);
+  --mds-background-color-primary-weak: var(--mds-color-maersk-light-blue);
+
+  /* ===== TEXT COLORS ===== */
+  --mds-text-color-default: var(--mds-color-maersk-black);
+  --mds-text-color-weak: var(--mds-color-maersk-grey);
+  --mds-text-color-inverse: var(--mds-color-maersk-white);
+  --mds-text-color-primary: var(--mds-color-maersk-blue);
+  --mds-text-color-success: var(--mds-color-success);
+  --mds-text-color-error: var(--mds-color-error);
+  --mds-text-color-warning: var(--mds-color-warning);
+
+  /* ===== BORDER COLORS ===== */
+  --mds-border-color-default: #E0E0E0;
+  --mds-border-color-weak: #F0F0F0;
+  --mds-border-color-strong: var(--mds-color-maersk-grey);
+  --mds-border-color-primary: var(--mds-color-maersk-blue);
+
+  /* ===== TYPOGRAPHY TOKENS ===== */
+  --mds-font-family-primary: 'Maersk Headline', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --mds-font-family-text: 'Maersk Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --mds-font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+
+  /* Font Sizes */
+  --mds-font-size-xs: 0.75rem;   /* 12px */
+  --mds-font-size-sm: 0.875rem;  /* 14px */
+  --mds-font-size-md: 1rem;      /* 16px */
+  --mds-font-size-lg: 1.125rem;  /* 18px */
+  --mds-font-size-xl: 1.25rem;   /* 20px */
+  --mds-font-size-2xl: 1.5rem;   /* 24px */
+  --mds-font-size-3xl: 1.875rem; /* 30px */
+  --mds-font-size-4xl: 2.25rem;  /* 36px */
+
+  /* Font Weights */
+  --mds-font-weight-normal: 400;
+  --mds-font-weight-medium: 500;
+  --mds-font-weight-bold: 700;
+
+  /* Line Heights */
+  --mds-line-height-tight: 1.25;
+  --mds-line-height-normal: 1.5;
+  --mds-line-height-relaxed: 1.75;
+
+  /* ===== BORDER RADIUS ===== */
+  --mds-border-radius-sm: 4px;
+  --mds-border-radius-md: 8px;
+  --mds-border-radius-lg: 12px;
+  --mds-border-radius-xl: 16px;
+  --mds-border-radius-full: 9999px;
+
+  /* ===== SHADOWS ===== */
+  --mds-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --mds-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --mds-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --mds-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+
+  /* ===== Z-INDEX ===== */
+  --mds-z-index-dropdown: 1000;
+  --mds-z-index-sticky: 1020;
+  --mds-z-index-fixed: 1030;
+  --mds-z-index-modal-backdrop: 1040;
+  --mds-z-index-modal: 1050;
+  --mds-z-index-popover: 1060;
+  --mds-z-index-tooltip: 1070;
+
+  /* ===== TRANSITIONS ===== */
+  --mds-transition-fast: 150ms ease-in-out;
+  --mds-transition-base: 250ms ease-in-out;
+  --mds-transition-slow: 350ms ease-in-out;
+}
+
+/* ==========================================================================
+   FOUNDATION STYLES
+   ========================================================================== */
+
+/* ===== BASE STYLING ===== */
+.mds {
+  font-family: var(--mds-font-family-text);
+  font-size: var(--mds-font-size-md);
+  font-weight: var(--mds-font-weight-normal);
+  line-height: var(--mds-line-height-normal);
+  color: var(--mds-text-color-default);
+  background-color: var(--mds-background-color-default);
+
+  /* Maersk font rendering optimizations */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizelegibility;
+}
+
+/* ===== TYPOGRAPHY CLASSES ===== */
+
+/* Headlines */
+.mds-headline-xs {
+  font-family: var(--mds-font-family-primary);
+  font-size: var(--mds-font-size-lg);
+  font-weight: var(--mds-font-weight-bold);
+  line-height: var(--mds-line-height-tight);
+  margin: 0 0 var(--mds-space-300) 0;
+}
+
+.mds-headline-sm {
+  font-family: var(--mds-font-family-primary);
+  font-size: var(--mds-font-size-xl);
+  font-weight: var(--mds-font-weight-bold);
+  line-height: var(--mds-line-height-tight);
+  margin: 0 0 var(--mds-space-400) 0;
+}
+
+.mds-headline-md {
+  font-family: var(--mds-font-family-primary);
+  font-size: var(--mds-font-size-2xl);
+  font-weight: var(--mds-font-weight-bold);
+  line-height: var(--mds-line-height-tight);
+  margin: 0 0 var(--mds-space-500) 0;
+}
+
+.mds-headline-lg {
+  font-family: var(--mds-font-family-primary);
+  font-size: var(--mds-font-size-3xl);
+  font-weight: var(--mds-font-weight-bold);
+  line-height: var(--mds-line-height-tight);
+  margin: 0 0 var(--mds-space-600) 0;
+}
+
+.mds-headline-xl {
+  font-family: var(--mds-font-family-primary);
+  font-size: var(--mds-font-size-4xl);
+  font-weight: var(--mds-font-weight-bold);
+  line-height: var(--mds-line-height-tight);
+  margin: 0 0 var(--mds-space-700) 0;
+}
+
+/* Text Styles */
+.mds-text-xs { font-size: var(--mds-font-size-xs); }
+.mds-text-sm { font-size: var(--mds-font-size-sm); }
+.mds-text-md { font-size: var(--mds-font-size-md); }
+.mds-text-lg { font-size: var(--mds-font-size-lg); }
+.mds-text-xl { font-size: var(--mds-font-size-xl); }
+
+.mds-text-normal { font-weight: var(--mds-font-weight-normal); }
+.mds-text-medium { font-weight: var(--mds-font-weight-medium); }
+.mds-text-bold { font-weight: var(--mds-font-weight-bold); }
+
+/* ===== COLOR UTILITIES ===== */
+
+/* Text Colors */
+.mds-text-primary { color: var(--mds-text-color-primary); }
+.mds-text-secondary { color: var(--mds-text-color-weak); }
+.mds-text-success { color: var(--mds-text-color-success); }
+.mds-text-error { color: var(--mds-text-color-error); }
+.mds-text-warning { color: var(--mds-text-color-warning); }
+.mds-text-neutral { color: var(--mds-text-color-default); }
+.mds-text-inverse { color: var(--mds-text-color-inverse); }
+
+/* Background Colors */
+.mds-bg-primary { background-color: var(--mds-background-color-primary); }
+.mds-bg-primary-weak { background-color: var(--mds-background-color-primary-weak); }
+.mds-bg-neutral-weak { background-color: var(--mds-background-color-neutral-weak); }
+.mds-bg-success { background-color: var(--mds-color-success); }
+.mds-bg-success-weak { background-color: var(--mds-color-success-weak); }
+.mds-bg-error { background-color: var(--mds-color-error); }
+.mds-bg-error-weak { background-color: var(--mds-color-error-weak); }
+.mds-bg-warning { background-color: var(--mds-color-warning); }
+.mds-bg-warning-weak { background-color: var(--mds-color-warning-weak); }
+
+/* ===== SPACING UTILITIES ===== */
+.mds-m-0 { margin: 0; }
+.mds-m-xs { margin: var(--mds-space-100); }
+.mds-m-sm { margin: var(--mds-space-200); }
+.mds-m-md { margin: var(--mds-space-400); }
+.mds-m-lg { margin: var(--mds-space-600); }
+.mds-m-xl { margin: var(--mds-space-800); }
+
+.mds-p-0 { padding: 0; }
+.mds-p-xs { padding: var(--mds-space-100); }
+.mds-p-sm { padding: var(--mds-space-200); }
+.mds-p-md { padding: var(--mds-space-400); }
+.mds-p-lg { padding: var(--mds-space-600); }
+.mds-p-xl { padding: var(--mds-space-800); }
+
+/* ===== BORDER UTILITIES ===== */
+.mds-border { border: 1px solid var(--mds-border-color-default); }
+.mds-border-primary { border: 1px solid var(--mds-border-color-primary); }
+.mds-border-weak { border: 1px solid var(--mds-border-color-weak); }
+.mds-border-strong { border: 1px solid var(--mds-border-color-strong); }
+
+.mds-rounded-sm { border-radius: var(--mds-border-radius-sm); }
+.mds-rounded-md { border-radius: var(--mds-border-radius-md); }
+.mds-rounded-lg { border-radius: var(--mds-border-radius-lg); }
+.mds-rounded-xl { border-radius: var(--mds-border-radius-xl); }
+.mds-rounded-full { border-radius: var(--mds-border-radius-full); }
+
+/* ===== SHADOW UTILITIES ===== */
+.mds-shadow-sm { box-shadow: var(--mds-shadow-sm); }
+.mds-shadow-md { box-shadow: var(--mds-shadow-md); }
+.mds-shadow-lg { box-shadow: var(--mds-shadow-lg); }
+.mds-shadow-xl { box-shadow: var(--mds-shadow-xl); }
+
+/* ==========================================================================
+   COMPONENT FOUNDATION STYLES
+   ========================================================================== */
+
+/* ===== BUTTONS ===== */
+.mds-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--mds-space-200) var(--mds-space-400);
+  font-family: var(--mds-font-family-text);
+  font-size: var(--mds-font-size-md);
+  font-weight: var(--mds-font-weight-medium);
+  line-height: var(--mds-line-height-tight);
+  border: 1px solid transparent;
+  border-radius: var(--mds-border-radius-md);
+  cursor: pointer;
+  transition: all var(--mds-transition-fast);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.mds-button--primary {
+  background-color: var(--mds-color-primary);
+  color: var(--mds-text-color-inverse);
+  border-color: var(--mds-color-primary);
+}
+
+.mds-button--primary:hover {
+  background-color: var(--mds-color-maersk-dark-blue);
+  border-color: var(--mds-color-maersk-dark-blue);
+}
+
+.mds-button--secondary {
+  background-color: transparent;
+  color: var(--mds-color-primary);
+  border-color: var(--mds-color-primary);
+}
+
+.mds-button--secondary:hover {
+  background-color: var(--mds-background-color-primary-weak);
+}
+
+/* ===== CARDS ===== */
+.mds-card {
+  background-color: var(--mds-background-color-default);
+  border: 1px solid var(--mds-border-color-default);
+  border-radius: var(--mds-border-radius-lg);
+  box-shadow: var(--mds-shadow-sm);
+  overflow: hidden;
+  transition: box-shadow var(--mds-transition-base);
+}
+
+.mds-card:hover {
+  box-shadow: var(--mds-shadow-md);
+}
+
+.mds-card__header {
+  padding: var(--mds-space-500) var(--mds-space-500) var(--mds-space-400);
+  border-bottom: 1px solid var(--mds-border-color-weak);
+}
+
+.mds-card__body {
+  padding: var(--mds-space-500);
+}
+
+.mds-card__footer {
+  padding: var(--mds-space-400) var(--mds-space-500) var(--mds-space-500);
+  border-top: 1px solid var(--mds-border-color-weak);
+  background-color: var(--mds-background-color-neutral-weak);
+}
+
+/* ===== FORM ELEMENTS ===== */
+.mds-input {
+  width: 100%;
+  padding: var(--mds-space-200) var(--mds-space-300);
+  font-family: var(--mds-font-family-text);
+  font-size: var(--mds-font-size-md);
+  line-height: var(--mds-line-height-normal);
+  color: var(--mds-text-color-default);
+  background-color: var(--mds-background-color-default);
+  border: 1px solid var(--mds-border-color-default);
+  border-radius: var(--mds-border-radius-md);
+  transition: border-color var(--mds-transition-fast);
+}
+
+.mds-input:focus {
+  outline: none;
+  border-color: var(--mds-color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 119, 190, 0.1);
+}
+
+.mds-label {
+  display: block;
+  font-weight: var(--mds-font-weight-medium);
+  margin-bottom: var(--mds-space-100);
+  color: var(--mds-text-color-default);
+}
+
+/* ==========================================================================
+   MAERSK BRAND ACCENT COLORS (Extended from your existing CSS)
+   ========================================================================== */
+:root {
+  --maersk-accent-1: #FFE5E5; /* Light Red */
+  --maersk-accent-2: #FF9999; /* Medium Red */
+  --maersk-accent-3: #FFD700; /* Gold/Yellow */
+  --maersk-accent-4: #FFA500; /* Orange */
+  --maersk-accent-5: #90EE90; /* Light Green */
+  --maersk-accent-6: #32CD32; /* Lime Green */
+  --maersk-accent-7: var(--mds-color-maersk-light-blue); /* Light Blue */
+  --maersk-accent-8: var(--mds-color-maersk-blue); /* Maersk Blue */
+}
+
+/* ==========================================================================
+   UTILITY CLASSES FOR INTEGRATION
+   ========================================================================== */
+.mds-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--mds-space-400);
+}
+
+.mds-flex {
+  display: flex;
+}
+
+.mds-flex-col {
+  flex-direction: column;
+}
+
+.mds-items-center {
+  align-items: center;
+}
+
+.mds-justify-center {
+  justify-content: center;
+}
+
+.mds-justify-between {
+  justify-content: space-between;
+}
+
+.mds-gap-sm {
+  gap: var(--mds-space-200);
+}
+
+.mds-gap-md {
+  gap: var(--mds-space-400);
+}
+
+.mds-gap-lg {
+  gap: var(--mds-space-600);
+}
+
+.mds-w-full {
+  width: 100%;
+}
+
+.mds-h-full {
+  height: 100%;
+}
+
+.mds-text-center {
+  text-align: center;
+}
+
+/* ==========================================================================
+   RESPONSIVE UTILITIES
+   ========================================================================== */
+@media (max-width: 768px) {
+  .mds-container {
+    padding: 0 var(--mds-space-300);
+  }
+  
+  .mds-headline-xl {
+    font-size: var(--mds-font-size-3xl);
+  }
+  
+  .mds-headline-lg {
+    font-size: var(--mds-font-size-2xl);
+  }
+}
+
+/* ==========================================================================
+   APPLICATION-SPECIFIC INTEGRATION STYLES
+   ========================================================================== */
+
+/* Make MDS inputs work with existing input-group layout */
+.input-group .mds-input {
+  margin-bottom: var(--mds-space-100);
+}
+
+/* Improve MDS button integration with existing button styling */
+.mds-button.run-btn {
+  font-size: var(--mds-font-size-lg);
+  padding: var(--mds-space-300) var(--mds-space-600);
+  margin-top: var(--mds-space-400);
+}
+
+/* Better spacing for flex layouts */
+.mds-flex.scenario-buttons {
+  flex-wrap: wrap;
+}
+
+.mds-flex.scenario-buttons .mds-button {
+  flex: 1;
+  min-width: 140px;
+}
+
+/* Improve table input styling */
+.data-table .mds-input {
+  border: 1px solid var(--mds-border-color-default);
+  padding: var(--mds-space-100) var(--mds-space-200);
+  font-size: var(--mds-font-size-sm);
+}
+
+/* Chart container improvements */
+.chart-container.mds-card {
+  margin-bottom: var(--mds-space-600);
+}
+
+.chart-container.mds-card .mds-card__body {
+  padding: var(--mds-space-300);
+}
+
+/* Stats grid layout improvements */
+.stats-grid {
+  display: grid;
+  gap: var(--mds-space-300);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+/* Equilibrium analysis grid */
+.equilibrium-analysis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--mds-space-500);
+  margin-top: var(--mds-space-600);
+}
+
+/* Navigation improvements */
+.main-nav a {
+  transition: color var(--mds-transition-fast);
+}
+
+.main-nav a:hover {
+  color: var(--mds-color-primary);
+}
+
+/* Helper text improvements */
+.input-helper.mds-text-sm {
+  display: block;
+  margin-top: var(--mds-space-100);
+}
+
+/* Responsive flexbox improvements */
+@media (max-width: 768px) {
+  .mds-flex.supply-inputs,
+  .mds-flex.baseline-inputs,
+  .mds-flex.option-inputs {
+    flex-direction: column;
+  }
+  
+  .mds-flex.scenario-buttons {
+    flex-direction: column;
+  }
+  
+  .equilibrium-analysis {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Form layout improvements for narrow screens */
+@media (max-width: 576px) {
+  .mds-flex.mds-gap-sm > .mds-button {
+    margin-top: var(--mds-space-200);
+  }
+  
+  .option-inputs.mds-flex {
+    gap: var(--mds-space-400);
+  }
+}
+
+/* Improve visual hierarchy */
+.mds-card + .mds-card {
+  margin-top: var(--mds-space-500);
+}
+
+/* Status-aware styling for equilibrium values */
+.eq-value.positive {
+  color: var(--mds-color-success);
+}
+
+.eq-value.negative {
+  color: var(--mds-color-error);
+}
+
+/* Focus states for better accessibility */
+.mds-input:focus,
+.mds-button:focus {
+  outline: 2px solid var(--mds-color-primary);
+  outline-offset: 2px;
+}
+
+/* Loading states */
+.mds-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Tooltip positioning improvements */
+.info-icon {
+  color: var(--mds-color-primary);
+  cursor: help;
+  transition: color var(--mds-transition-fast);
+}
+
+.info-icon:hover {
+  color: var(--mds-color-maersk-dark-blue);
+}
+
+/* Table styling improvements */
+.data-table {
+  border-collapse: collapse;
+  width: 100%;
+  border: 1px solid var(--mds-border-color-default);
+  border-radius: var(--mds-border-radius-md);
+  overflow: hidden;
+}
+
+.data-table th {
+  background-color: var(--mds-background-color-neutral-weak);
+  padding: var(--mds-space-300);
+  text-align: left;
+  font-weight: var(--mds-font-weight-medium);
+  border-bottom: 1px solid var(--mds-border-color-default);
+}
+
+.data-table td {
+  padding: var(--mds-space-200);
+  border-bottom: 1px solid var(--mds-border-color-weak);
+}
+
+/* Improved visual feedback for interactive elements */
+.mds-card:hover {
+  transform: translateY(-1px);
+  transition: transform var(--mds-transition-fast), box-shadow var(--mds-transition-fast);
+}
+
+/* Better spacing for nested cards */
+.mds-card .mds-card {
+  box-shadow: var(--mds-shadow-sm);
+  border: 1px solid var(--mds-border-color-weak);
+} 

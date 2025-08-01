@@ -1,0 +1,270 @@
+@import './mixins/_typography';
+
+@at-root .mds {
+  background: var(--mds_foundations_body_background-color);
+  color: var(--mds_foundations_body_text-color);
+
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizelegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+
+  @include mds-apply-font('text', 'medium', 'normal');
+}
+
+.mds-headline {
+  &--x-small {
+    @include mds-apply-font('headline', 'x-small');
+  }
+
+  &--small {
+    @include mds-apply-font('headline', 'small');
+  }
+
+  &--medium {
+    @include mds-apply-font('headline', 'medium');
+  }
+
+  &--large {
+    @include mds-apply-font('headline', 'large');
+  }
+
+  &--x-large {
+    @include mds-apply-font('headline', 'x-large');
+  }
+}
+
+.mds-text {
+  &--x-small {
+    &-normal {
+      @include mds-apply-font('text', 'x-small', 'normal');
+    }
+
+    &-medium {
+      @include mds-apply-font('text', 'x-small', 'medium');
+    }
+
+    &-bold {
+      @include mds-apply-font('text', 'x-small', 'bold');
+    }
+
+    &-italic {
+      @include mds-apply-font('text', 'x-small', 'italic');
+    }
+
+    &-mediumitalic {
+      @include mds-apply-font('text', 'x-small', 'mediumitalic');
+    }
+
+    &-bolditalic {
+      @include mds-apply-font('text', 'x-small', 'bolditalic');
+    }
+  }
+
+  &--small {
+    &-normal {
+      @include mds-apply-font('text', 'small', 'normal');
+    }
+
+    &-medium {
+      @include mds-apply-font('text', 'small', 'medium');
+    }
+
+    &-bold {
+      @include mds-apply-font('text', 'small', 'bold');
+    }
+
+    &-italic {
+      @include mds-apply-font('text', 'small', 'italic');
+    }
+
+    &-mediumitalic {
+      @include mds-apply-font('text', 'small', 'mediumitalic');
+    }
+
+    &-bolditalic {
+      @include mds-apply-font('text', 'small', 'bolditalic');
+    }
+  }
+
+  &--medium {
+    &-normal {
+      @include mds-apply-font('text', 'medium', 'normal');
+    }
+
+    &-medium {
+      @include mds-apply-font('text', 'medium', 'medium');
+    }
+
+    &-bold {
+      @include mds-apply-font('text', 'medium', 'bold');
+    }
+
+    &-italic {
+      @include mds-apply-font('text', 'medium', 'italic');
+    }
+
+    &-mediumitalic {
+      @include mds-apply-font('text', 'medium', 'mediumitalic');
+    }
+
+    &-bolditalic {
+      @include mds-apply-font('text', 'medium', 'bolditalic');
+    }
+  }
+
+  &--large {
+    &-normal {
+      @include mds-apply-font('text', 'large', 'normal');
+    }
+
+    &-medium {
+      @include mds-apply-font('text', 'large', 'medium');
+    }
+
+    &-bold {
+      @include mds-apply-font('text', 'large', 'bold');
+    }
+
+    &-italic {
+      @include mds-apply-font('text', 'large', 'italic');
+    }
+
+    &-mediumitalic {
+      @include mds-apply-font('text', 'large', 'mediumitalic');
+    }
+
+    &-bolditalic {
+      @include mds-apply-font('text', 'large', 'bolditalic');
+    }
+  }
+}
+
+.mds-container .mds-headline {
+  &--x-small {
+    @include mds-apply-font-container-query('headline', 'x-small');
+  }
+
+  &--small {
+    @include mds-apply-font-container-query('headline', 'small');
+  }
+
+  &--medium {
+    @include mds-apply-font-container-query('headline', 'medium');
+  }
+
+  &--large {
+    @include mds-apply-font-container-query('headline', 'large');
+  }
+
+  &--x-large {
+    @include mds-apply-font-container-query('headline', 'x-large');
+  }
+}
+
+.mds-container .mds-text {
+  &--x-small {
+    &-normal,
+    &-medium,
+    &-bold,
+    &-italic,
+    &-mediumitalic,
+    &-bolditalic {
+      @include mds-apply-font-container-query('text', 'x-small');
+    }
+  }
+
+  &--small {
+    &-normal,
+    &-medium,
+    &-bold,
+    &-italic,
+    &-mediumitalic,
+    &-bolditalic {
+      @include mds-apply-font-container-query('text', 'small');
+    }
+  }
+
+  &--medium {
+    &-normal,
+    &-medium,
+    &-bold,
+    &-italic,
+    &-mediumitalic,
+    &-bolditalic {
+      @include mds-apply-font-container-query('text', 'medium');
+    }
+  }
+
+  &--large {
+    &-normal,
+    &-medium,
+    &-bold,
+    &-italic,
+    &-mediumitalic,
+    &-bolditalic {
+      @include mds-apply-font-container-query('text', 'large');
+    }
+  }
+}
+
+.mds-tabular-figures {
+  @include mds-apply-tabular-figures();
+}
+
+.mds-numeric {
+  &.mds-tabular-figures {
+    font-feature-settings:
+      'salt' on,
+      'tnum';
+  }
+  @include mds-apply-numeric();
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  padding: 0;
+  margin: 0;
+}
+
+h1 {
+  @extend .mds-headline--large;
+}
+
+h2 {
+  @extend .mds-headline--medium;
+}
+
+h3 {
+  @extend .mds-headline--small;
+}
+
+h4 {
+  @extend .mds-headline--x-small;
+}
+
+h5,
+h6 {
+  @extend .mds-text--medium-bold;
+}
+
+em {
+  font-style: var(--mds_brand_typography_text_medium_italic_font-style);
+}
+
+strong {
+  font-weight: var(--mds_brand_typography_text_medium_bold_font-weight);
+}
+
+.mds-underline--dotted {
+  @include mds-apply-underline-dotted();
+}
