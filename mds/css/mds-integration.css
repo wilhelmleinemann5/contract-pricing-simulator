@@ -100,12 +100,12 @@
 }
 
 /* ==========================================================================
-   DARK THEME BASE STYLING
+   DARK THEME BASE STYLING (OVERRIDE EXISTING LIGHT THEME)
    ========================================================================== */
 
 .mds {
-  background-color: var(--mds-color-dark-bg-primary);
-  color: var(--mds-color-dark-text-primary);
+  background-color: var(--mds-color-dark-bg-primary) !important;
+  color: var(--mds-color-dark-text-primary) !important;
   font-family: var(--mds-font-family-text);
   font-size: var(--mds-font-size-md);
   font-weight: var(--mds-font-weight-normal);
@@ -114,6 +114,190 @@
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizelegibility;
   min-height: 100vh;
+}
+
+/* Override existing container styles */
+.mds .container {
+  background-color: var(--mds-color-dark-bg-primary) !important;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--mds-space-500);
+}
+
+/* Override existing body styles */
+.mds body,
+body.mds {
+  background: var(--mds-color-dark-bg-primary) !important;
+  color: var(--mds-color-dark-text-primary) !important;
+  font-family: var(--mds-font-family-text) !important;
+}
+
+/* Override input panel styles */
+.mds .input-panel {
+  background: var(--mds-color-dark-surface) !important;
+  border: 1px solid var(--mds-color-dark-border) !important;
+  color: var(--mds-color-dark-text-primary) !important;
+}
+
+/* Override all input and select styles */
+.mds .input-group input,
+.mds .input-group select,
+.mds input,
+.mds select {
+  background: var(--mds-color-dark-bg-secondary) !important;
+  color: var(--mds-color-dark-text-primary) !important;
+  border: 2px solid var(--mds-color-dark-border) !important;
+}
+
+.mds .input-group input:focus,
+.mds .input-group select:focus,
+.mds input:focus,
+.mds select:focus {
+  border-color: var(--mds-color-maersk-blue) !important;
+  box-shadow: 0 0 0 3px rgba(0, 119, 190, 0.25) !important;
+  outline: none !important;
+  background: var(--mds-color-dark-bg-tertiary) !important;
+}
+
+/* Override label styles */
+.mds .input-group label,
+.mds label {
+  color: var(--mds-color-dark-text-primary) !important;
+  font-weight: var(--mds-font-weight-medium);
+}
+
+/* Override results panel */
+.mds .results-panel {
+  background: var(--mds-color-dark-bg-primary) !important;
+  color: var(--mds-color-dark-text-primary) !important;
+}
+
+/* Override stat cards */
+.mds .stat-item,
+.mds .stat-card {
+  background: var(--mds-color-dark-surface) !important;
+  color: var(--mds-color-dark-text-primary) !important;
+  border: 1px solid var(--mds-color-dark-border) !important;
+}
+
+.mds .stat-label {
+  color: var(--mds-color-dark-text-secondary) !important;
+}
+
+.mds .stat-value {
+  color: var(--mds-color-maersk-light-blue) !important;
+}
+
+/* Override navigation styles */
+.mds .main-nav {
+  background: var(--mds-color-dark-surface) !important;
+  border-bottom: 1px solid var(--mds-color-dark-border) !important;
+}
+
+.mds .main-nav a {
+  color: var(--mds-color-dark-text-secondary) !important;
+}
+
+.mds .main-nav a:hover {
+  color: var(--mds-color-maersk-light-blue) !important;
+  background: var(--mds-color-dark-surface-hover) !important;
+}
+
+.mds .main-nav a.active {
+  color: var(--mds-color-maersk-light-blue) !important;
+  background: var(--mds-color-dark-surface-active) !important;
+  border-bottom-color: var(--mds-color-maersk-accent-blue) !important;
+}
+
+/* Override scenario section styles */
+.mds .scenario-section {
+  background: var(--mds-color-dark-bg-secondary) !important;
+  color: var(--mds-color-dark-text-primary) !important;
+  border: 1px solid var(--mds-color-maersk-blue) !important;
+}
+
+.mds .scenario-section h3 {
+  color: var(--mds-color-dark-text-primary) !important;
+}
+
+/* Override option pricing UI styles */
+.mds .option-pricing-ui {
+  background: var(--mds-color-dark-surface) !important;
+  color: var(--mds-color-dark-text-primary) !important;
+}
+
+.mds .option-pricing-ui h2 {
+  color: var(--mds-color-maersk-light-blue) !important;
+}
+
+/* Override comparison table styles */
+.mds .comparison-table {
+  background: var(--mds-color-dark-surface) !important;
+  color: var(--mds-color-dark-text-primary) !important;
+}
+
+.mds .comparison-table th {
+  background: var(--mds-color-dark-bg-secondary) !important;
+  color: var(--mds-color-dark-text-primary) !important;
+}
+
+.mds .comparison-table td {
+  color: var(--mds-color-dark-text-primary) !important;
+}
+
+/* Override all text elements */
+.mds h1, .mds h2, .mds h3, .mds h4, .mds h5, .mds h6 {
+  color: var(--mds-color-dark-text-primary) !important;
+}
+
+.mds p, .mds span, .mds div {
+  color: inherit !important;
+}
+
+/* Override helper text */
+.mds .input-helper,
+.mds small {
+  color: var(--mds-color-dark-text-tertiary) !important;
+}
+
+/* Override button styles to ensure they work with dark theme */
+.mds .scenario-btn,
+.mds button:not(.mds-button) {
+  background: var(--mds-color-dark-surface) !important;
+  border: 2px solid var(--mds-color-dark-border-light) !important;
+  color: var(--mds-color-dark-text-primary) !important;
+}
+
+.mds .scenario-btn:hover,
+.mds button:not(.mds-button):hover {
+  border-color: var(--mds-color-maersk-blue) !important;
+  color: var(--mds-color-maersk-light-blue) !important;
+  background: var(--mds-color-dark-surface-hover) !important;
+}
+
+/* Ensure run button maintains its styling */
+.mds .run-btn {
+  background: linear-gradient(135deg, var(--mds-color-maersk-blue), var(--mds-color-maersk-accent-blue)) !important;
+  color: white !important;
+}
+
+/* Override any remaining light backgrounds */
+.mds * {
+  background-color: inherit;
+  color: inherit;
+}
+
+/* Specific overrides for common elements */
+.mds .chart-container,
+.mds .results-panel,
+.mds .stats-container {
+  background: var(--mds-color-dark-bg-primary) !important;
+}
+
+/* Override tooltips */
+.mds [data-tooltip]:hover::after {
+  background: var(--mds-color-dark-bg-secondary) !important;
+  color: var(--mds-color-dark-text-primary) !important;
 }
 
 /* ==========================================================================
